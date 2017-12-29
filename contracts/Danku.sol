@@ -1,0 +1,490 @@
+pragma solidity ^0.4.19;
+// Danku contract version 0.0.1
+// Data points are x, y, and z
+
+contract Danku {
+  function Danku() public {
+    // Neural Network Structure:
+    //
+    // (required) input layer x number of neurons
+    // (optional) hidden layers x number of neurons
+    // (required) output layer x number of neurons
+  }
+  struct Submission {
+      address payment_address;
+      // Define the number of neurons each layer has.
+      uint num_neurons_input_layer;
+      uint num_neurons_output_layer;
+      // There can be multiple hidden layers.
+      uint[] num_neurons_hidden_layer;
+      // Weights indexes are the following:
+      // weights[l_i x l_n_i x pl_n_i]
+      // Also number of layers in weights is layers.length-1
+      int256[] weights;
+  }
+  struct NeuralLayer {
+    int256[] neurons;
+    int256[] errors;
+    string layer_type;
+  }
+
+  address public organizer;
+  // Keep track of the best model
+  uint best_submission_index;
+  // Keep track of best model accuracy
+  int256 best_submission_accuracy = 0;
+  // The model accuracy criteria
+  int256 model_accuracy_criteria;
+  // Use test data if provided
+  bool use_test_data = false;
+  // Each partition is 5% of the total dataset size
+  uint constant partition_size = 5;
+  // Data points are made up of x and y coordinates and the prediction
+  uint constant datapoint_size = 3;
+  uint constant prediction_size = 1;
+  // Max number of data groups
+  uint8 constant max_num_data_groups = 100;
+  // Training partition size
+  uint8 constant training_data_group_size = 70;
+  // Testing partition size
+  uint8 constant testing_data_group_size = max_num_data_groups - training_data_group_size;
+  // Dataset is divided into 20 data groups.
+  // Every data group includes a nonce.
+  // Look at sha_data_group() for more detail about hasing a data group
+  bytes32[max_num_data_groups/partition_size] hashed_data_groups;
+  // Nonces are revelead together with data groups
+  uint[max_num_data_groups/partition_size] data_group_nonces;
+  // + 1 for prediction
+  // A data group has 3 data points in total
+  int256[datapoint_size][] train_data;
+  int256[datapoint_size][] test_data;
+  bytes32 partition_seed;
+  // Deadline for submitting solutions in terms of block size
+  uint public submission_stage_block_size;
+  // Deadline for revealing the testing dataset
+  uint public reveal_test_data_groups_block_size;
+  // Deadline for evaluating the submissions
+  uint public evaluation_stage_block_size;
+  uint init1_block_height;
+  uint init3_block_height;
+  uint init_level = 0;
+  // Training partition size is 14 (70%)
+  // Testing partition size is 6 (30%)
+  uint[training_data_group_size/partition_size] public training_partition;
+  uint[testing_data_group_size/partition_size] public testing_partition;
+  Submission[] submission_queue;
+  bool contract_terminated = false;
+
+  // Takes in array of hashed data points of the entire dataset,
+  // submission and evaluation times
+  function init1(bytes32[max_num_data_groups/partition_size] _hashed_data_groups, int accuracy_criteria, uint submission_t, uint evaluation_t, uint test_reveal_t) external {
+    // Make sure contract is not terminated
+    assert(contract_terminated == false);
+    // Make sure it's called in order
+    assert(init_level == 0);
+    organizer = msg.sender;
+    init_level = 1;
+    init1_block_height = block.number;
+
+    // Make sure there are in total 20 hashed data groups
+    assert(_hashed_data_groups.length != max_num_data_groups/partition_size);
+    hashed_data_groups = _hashed_data_groups;
+    // Make sure submission, evaluation and test reaveal times are set to
+    // at least 1 block
+    assert(submission_t > 0);
+    assert(evaluation_t > 0);
+    assert(test_reveal_t > 0);
+    // Accuracy criteria example: 85.9% => 8,590
+    // 100 % => 10,000
+    assert(model_accuracy_criteria > 0);
+    submission_stage_block_size = submission_t;
+    evaluation_stage_block_size = evaluation_t;
+    reveal_test_data_groups_block_size = test_reveal_t;
+    model_accuracy_criteria = accuracy_criteria;
+  }
+
+  function init2() external {
+    // Make sure contract is not terminated
+    assert(contract_terminated == false);
+    // Only allow calling it once, in order
+    assert(init_level == 1);
+    // Make sure it's being called within 5 blocks on init1()
+    // to minimize organizer influence on random index selection
+    if (block.number <= init1_block_height+5) {
+      // Try to select random training indexes
+      if (set_data_indexes()) {
+        init_level = 2;
+      // If random selection fails, terminate contract
+      } else {
+        // Cancel contract
+        cancel_contract();
+      }
+    } else {
+      // Cancel the contract if init2() hasn't been called within 5
+      // blocks of init1()
+      cancel_contract();
+    }
+  }
+
+    function init3(int256[] _train_data_groups, int256[] _train_data_group_nonces) external {
+    // Make sure contract is not terminated
+    assert(contract_terminated == false);
+    // Only allow calling once, in order
+    assert(init_level == 2);
+    // Verify data group and nonce lengths
+    assert(_train_data_groups.length == training_partition.length);
+    assert(_train_data_group_nonces.length == training_partition.length);
+    // Verify data group hashes
+    for (uint i = 0; i < _train_data_group_nonces.length; i++) {
+      // Order of revealed training data group must be the same with training partitions
+      // Infer data group size
+      int max_dg_s = round_up_division(int(_train_data_groups.length), int(training_data_group_size/partition_size));
+      // 3rd parameter is true since we're sending training data
+      assert(sha_data_group(_train_data_groups, _train_data_group_nonces[i], max_dg_s, i) == hashed_data_groups[training_partition[i]]);
+    }
+    // Assign training data
+    unpack_data_groups(_train_data_groups, true);
+    init_level = 3;
+    init3_block_height = block.number;
+  }
+
+  function submit_model(
+    // Public function for users to submit a solution
+    // Returns the submission index
+    address paymentAddress,
+    uint num_neurons_input_layer,
+    uint num_neurons_output_layer,
+    uint[] num_neurons_hidden_layer,
+    int[] weights) public returns (uint) {
+      // Make sure contract is not terminated
+      assert(contract_terminated == false);
+      // Make sure it's not the initialization stage anymore
+      assert(init_level == 3);
+      // Make sure it's still within the submission stage
+      assert(block.number < init3_block_height + submission_stage_block_size);
+      // Make sure that num of neurons in the input & output layer matches
+      // the problem description
+      assert(num_neurons_input_layer == datapoint_size - prediction_size);
+      assert(num_neurons_output_layer == prediction_size);
+      // Make sure that the number of weights match network structure
+      assert(valid_weights(weights, num_neurons_input_layer, num_neurons_output_layer, num_neurons_hidden_layer));
+      // Add solution to submission queue
+      submission_queue.push(Submission(
+        paymentAddress,
+        num_neurons_input_layer,
+        num_neurons_output_layer,
+        num_neurons_hidden_layer,
+        weights));
+
+    return submission_queue.length-1;
+  }
+
+    function reveal_test_data(int256[] _test_data_groups, int256[] _test_data_group_nonces) external {
+    // Make sure contract is not terminated
+    assert(contract_terminated == false);
+    // Make sure it's not the initialization stage anymore
+    assert(init_level == 3);
+    // Make sure it's revealed after the submission stage
+    assert(block.number >= init3_block_height + submission_stage_block_size);
+    // Make sure it's revealed within the reveal stage
+    assert(block.number < init3_block_height + submission_stage_block_size + reveal_test_data_groups_block_size);
+    // Verify data group and nonce lengths
+    assert(_test_data_groups.length == max_num_data_groups / partition_size - training_partition.length);
+    assert(_test_data_group_nonces.length == max_num_data_groups / partition_size - training_partition.length);
+    // Verify data group hashes
+    int max_dg_s = round_up_division(int(_test_data_groups.length), int(testing_data_group_size/partition_size));
+    for (uint i = 0; i < _test_data_groups.length; i++) {
+      assert(sha_data_group(_test_data_groups, _test_data_group_nonces[i], max_dg_s, i) == hashed_data_groups[training_partition[i]]);
+    }
+    // Assign testing data
+    unpack_data_groups(_test_data_groups, false);
+    // Use test data for evaluation
+    use_test_data = true;
+  }
+
+  function evaluate_model(uint submission_index) public {
+    // Make sure contract is not terminated
+    assert(contract_terminated == false);
+    // Make sure it's not the initialization stage anymore
+    assert(init_level == 3);
+    // Make sure it's evaluated after the reveal stage
+    assert(block.number >= init3_block_height + submission_stage_block_size + reveal_test_data_groups_block_size);
+    // Make sure it's evaluated within the evaluation stage
+    assert(block.number < init3_block_height + submission_stage_block_size + reveal_test_data_groups_block_size + evaluation_stage_block_size);
+    // Evaluates a submitted model & keeps track of the best model
+    int256 submission_accuracy = 0;
+    if (use_test_data == true) {
+      submission_accuracy = model_accuracy(submission_index, test_data);
+    } else {
+      submission_accuracy = model_accuracy(submission_index, train_data);
+    }
+
+    // Keep track of the most accurate model
+    if (submission_accuracy > best_submission_accuracy) {
+      best_submission_index = submission_index;
+      best_submission_accuracy = submission_accuracy;
+    }
+  }
+
+  function cancel_contract() public {
+    // Make sure contract is not already terminated
+    assert(contract_terminated == false);
+    // Contract can only be cancelled if initialization has failed.
+    assert(init_level < 3);
+    // Refund remaining balance to organizer
+    organizer.transfer(this.balance);
+    // Terminate contract
+    contract_terminated = true;
+  }
+
+  function finalize_contract() public {
+    // Make sure contract is not terminated
+    assert(contract_terminated == false);
+    // Make sure it's not the initialization stage anymore
+    assert(init_level == 3);
+    // Make sure the contract is finalized after the evaluation stage
+    assert(block.number >= init3_block_height + submission_stage_block_size + reveal_test_data_groups_block_size + evaluation_stage_block_size);
+    // Get the best submission to compare it against the criteria
+    Submission memory best_submission = submission_queue[best_submission_index];
+    // If best submission passes criteria, payout to the submitter
+    if (best_submission_accuracy >= model_accuracy_criteria) {
+      best_submission.payment_address.transfer(this.balance);
+    // If the best submission fails the criteria, refund the balance back to the organizer
+    } else {
+      organizer.transfer(this.balance);
+    }
+    contract_terminated = true;
+  }
+
+  // Getter method for getting training partition indexes
+  function getTrainingPartition() public view returns (uint[training_data_group_size/partition_size]) {
+    // Make sure contract is not terminated
+    assert(contract_terminated == false);
+    // Make sure it's not the initialization stage anymore
+    assert(init_level == 3);
+    return training_partition;
+  }
+
+  function model_accuracy(uint submission_index, int256[datapoint_size][] data) public constant returns (int256){
+    // Make sure contract is not terminated
+    assert(contract_terminated == false);
+    // Make sure it's not the initialization stage anymore
+    assert(init_level == 3);
+    // Leave function public for offline error calculation
+    // Get's the sum error for the model
+    Submission memory sub = submission_queue[submission_index];
+    int256 true_prediction = 0;
+    int256 false_prediction = 0;
+    int256 accuracy = 0;
+    for (uint i = 0; i < data.length; i++) {
+      int[] memory prediction;
+      int[] memory ground_truth;
+      // Get ground truth
+      for (uint j = 0; j < data[i].length; j++) {
+        // Only get prediction values
+        if (j > datapoint_size - prediction_size - 1) {
+          ground_truth[ground_truth.length] = data[i][j];
+        }
+      }
+      // Get prediction
+      prediction = forward_pass(data[i], sub);
+      // Get error for the output layer
+      for (uint k = 0; k < ground_truth.length; k++) {
+        if (ground_truth[k] - prediction[k] == 0) {
+          true_prediction += 1;
+        } else {
+          false_prediction += 1;
+        }
+      }
+      // We multipl by 10000 to get up to 2 decimal point precision while
+      // calculating the accuracy
+      accuracy = (true_prediction * 10000) / (true_prediction + false_prediction);
+    }
+    return accuracy;
+  }
+
+  function round_up_division(int256 dividend, int256 divisor) private pure returns(int256) {
+    // A special trick since solidity normall rounds it down
+    return (dividend + divisor -1) / divisor;
+  }
+
+  function not_in_train_partition(uint[training_data_group_size/partition_size] partition, uint number) private pure returns (bool) {
+    for (uint i = 0; i < partition.length; i++) {
+      if (number == partition[i]) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  function set_data_indexes() public returns (bool) {
+    uint[training_data_group_size/partition_size] memory training_index;
+    uint[testing_data_group_size/partition_size] memory testing_index;
+    uint index_counter = 0;
+    // We can try up to 32x256=8192 times before giving up
+    // If we don't get it (very unlikely), we'll return false
+    for (uint i = 0; i < 256; i++) {
+      // Try up to last 256 blocks
+      for (uint j = 0; j < 32; j++) {
+        // If we have enough random indexes, exit inner loop
+        if (training_index.length == training_data_group_size/partition_size) {
+            break;
+        }
+        // Get a number between 0 and dg_size-1
+        uint random_number = uint(keccak256(block.blockhash(block.number-i)[j])) % max_num_data_groups/partition_size;
+        // If number has not been selected yet, add it to our training index array
+        if (not_in_train_partition(training_index, random_number)) {
+            training_index[index_counter] = random_number;
+            index_counter += 1;
+        }
+      }
+      // If we have enough random indexes, exit outer loop
+      if (training_index.length == training_data_group_size/partition_size) {
+        break;
+      }
+    }
+    // Check if we have enough training indexes
+    if (training_index.length == training_data_group_size/partition_size) {
+      // Only set the training partition if random selection is successful
+      training_partition = training_index;
+      // Also set the remaining indexes to the testing partition
+      for (uint k = 0; k < max_num_data_groups/partition_size; k++) {
+        if (not_in_train_partition(training_index, k)) {
+          testing_index[testing_index.length] = k;
+        }
+      }
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  function valid_weights(int[] weights, uint num_neurons_input_layer, uint num_neurons_output_layer, uint[] num_neurons_hidden_layer) private pure returns (bool) {
+    // make sure the number of weights match the network structure
+    // get number of weights based on network structure
+    uint ns_total = 0;
+    uint wa_total = 0;
+    uint number_of_layers = 2 + num_neurons_hidden_layer.length;
+
+    if (number_of_layers == 2) {
+      ns_total = num_neurons_input_layer * num_neurons_output_layer;
+    } else {
+      for(uint i = 0; i < num_neurons_hidden_layer.length; i++) {
+        // Get weights between first hidden layer and input layer
+        if (i==0){
+          ns_total += num_neurons_input_layer * num_neurons_hidden_layer[i];
+        // Get weights between hidden layers
+        } else {
+          ns_total += num_neurons_hidden_layer[i-1] * num_neurons_hidden_layer[i];
+        }
+      }
+      // Get weights between last hidden layer and output layer
+      ns_total += num_neurons_hidden_layer[num_neurons_hidden_layer.length-1] * num_neurons_output_layer;
+    }
+    // get number of weights in the weights array
+    wa_total = weights.length;
+
+    return ns_total == wa_total;
+  }
+
+  /*function unpack_train_data_groups(int256[datapoint_size][][] _data_groups) private {*/
+    function unpack_data_groups(int256[] _data_groups, bool is_train_data) private {
+    int256[datapoint_size][] memory merged_data_group;
+    uint index_tracker = 0;
+    int256[datapoint_size] memory temp_data_point;
+
+    for (uint i = 0; i < _data_groups.length/datapoint_size; i++) {
+      for (uint j = 0; j < datapoint_size; j++) {
+        temp_data_point[j] = _data_groups[i*datapoint_size + j];
+      }
+      merged_data_group[index_tracker] = temp_data_point;
+      index_tracker += 1;
+    }
+    if (is_train_data == true) {
+      // Assign training data
+      train_data = merged_data_group;
+    } else {
+      // Assign testing data
+      test_data = merged_data_group;
+    }
+  }
+
+    function sha_data_group(int256[] data_group, int256 data_group_nonce, int256 max_data_group_size, uint256 data_group_index) private pure returns (bytes32) {
+      // Extract the relevant data points for the given data group index
+      // We concat all data groups and add the nounce to the end of the array
+      // and get the sha256 for the array
+      int256[] memory all_data_points;
+      uint index_tracker = 0;
+      uint256 total_size = datapoint_size * uint(max_data_group_size);
+      uint256 start_index = data_group_index * total_size;
+      uint256 iter_limit = start_index + total_size;
+
+      for (uint256 i = start_index; i < iter_limit; i++) {
+        all_data_points[index_tracker] = data_group[i];
+        index_tracker += 1;
+      }
+      // Add nonce to the whole array
+      all_data_points[index_tracker] = data_group_nonce;
+      index_tracker += 1;
+      // Return sha256 on all data points + nonce
+      return sha256(all_data_points);
+    }
+
+  function relu_activation(int256 x) private pure returns (int256) {
+    if (x < 0) {
+      return 0;
+    } else {
+      return x;
+    }
+  }
+
+  function get_layers(Submission sub) private pure returns (NeuralLayer[]) {
+    uint256[] memory nn_hl = sub.num_neurons_hidden_layer;
+    NeuralLayer[] memory layers;
+    uint256 layer_index = 0;
+
+    NeuralLayer memory input_layer;
+    input_layer.layer_type = "input_layer";
+    layers[layer_index] = input_layer;
+    layer_index += 1;
+    for (uint i = 0; i < nn_hl.length; i++) {
+      NeuralLayer memory hidden_layer;
+      hidden_layer.layer_type = "hidden_layer";
+      layers[layer_index] = hidden_layer;
+      layer_index += 1;
+    }
+    NeuralLayer memory output_layer;
+    input_layer.layer_type = "output_layer";
+    layers[layer_index] = output_layer;
+    layer_index += 1;
+    return layers;
+  }
+
+  function forward_pass(int[datapoint_size] data_point, Submission sub) private pure returns (int256[]) {
+    NeuralLayer[] memory layers = get_layers(sub);
+    // load inputs from input layer
+    for (uint input_i = 0; input_i < sub.num_neurons_input_layer; input_i++) {
+      layers[0].neurons[input_i] = data_point[input_i];
+    }
+    // evaluate the neurons in following layers
+    // skip input layer by starting at 1
+    uint weight_index;
+    for (uint layer_i = 1; layer_i < layers.length-1; layer_i++) {
+      NeuralLayer memory current_layer = layers[layer_i];
+      NeuralLayer memory previous_layer = layers[layer_i-1];
+      for (uint layer_neuron_i = 0; layer_neuron_i < current_layer.neurons.length; layer_neuron_i++) {
+        int total = 0;
+        for (uint prev_layer_neuron_i = 0; prev_layer_neuron_i < previous_layer.neurons.length; prev_layer_neuron_i++) {
+          weight_index = layer_i * (layers.length-1) + layer_neuron_i * current_layer.neurons.length + prev_layer_neuron_i * previous_layer.neurons.length;
+          total += previous_layer.neurons[prev_layer_neuron_i] * sub.weights[weight_index];
+        }
+        layers[layer_i].neurons[layer_neuron_i] = relu_activation(total);
+      }
+    }
+    // Return the output layer neurons
+    return layers[layers.length-1].neurons;
+  }
+
+  // Fallback function for sending ether to this contract
+  function () public payable {}
+}
