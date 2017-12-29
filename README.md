@@ -26,6 +26,11 @@ brew link solidity
 
 ### For Linux
 
+```
+sudo add-apt-repository ppa:ethereum/ethereum
+sudo apt-get update
+sudo apt-get install solc libssl-dev
+```
 
 ### 0.2. Initializing your Virtual Environment
 
@@ -44,7 +49,7 @@ source venv/bin/activate;
 Install `populus` while in virtualenv:
 
 ```
-pip install populus==2.1.0
+pip install populus==2.2.0
 ```
 
 Yay! You should be able to develop Ethereum contracts in Python 3 now!
@@ -62,5 +67,5 @@ populus compile
 To run all the tests, use the following:
 
 ```
-python -m pytest tests/*
+python -m pytest --disable-pytest-warnings tests/*
 ```
