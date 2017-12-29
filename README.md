@@ -4,7 +4,7 @@
 
 Since we're dealing with Ethereum contracts, you'll need a few things installed locally. We've mainly developed in a mac environment, so some of these things may not work as expected on linux. (for now)
 
-### 0.1. Installing the solidity compiler
+### 0.1. Installing the Solidity Compiler
 
 ### For OSX
 
