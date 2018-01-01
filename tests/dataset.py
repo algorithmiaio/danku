@@ -11,6 +11,14 @@ class Dataset(object):
             self.training_data_group_size
         self.dimensions = (13, 13)
         self.data = []
+    def generate_nonce(self):
+        # TODO: Generate nonces that will be used for later
+    def sha_data_group(self, data_group, nonce):
+        # TODO: Get the sha3-keccak hash of the given data group w/ a nonce
+    def partition_dataset(self, training_index):
+        # TODO: Partition the dataset based on the training indexes
+        # TODO: ALso generate hashes of partitioned data groups
+
 
 class SampleCircleDataset(Dataset):
     '''
