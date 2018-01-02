@@ -90,7 +90,7 @@ class NeuralNetwork():
                 self.tf_weights['out'])
 
         # Construct model
-        logits = self.tf_layers["out"](x_vector)
+        logits = self.tf_layers["out"]
         prediction = tf.nn.relu(logits)
 
         # Loss and optimizer
