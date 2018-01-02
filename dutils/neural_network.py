@@ -74,18 +74,20 @@ class NeuralNetwork():
         for i in range(len(self.hidden_layer_number_neurons)):
             if i == 0:
                 self.tf_layers["l" + str(i+1)] = tf.matmul(\
-                    x_vector, weights["h" + str(i+1)])
+                    x_vector, self.tf_weights["h" + str(i+1)])
             else:
                 self.tf_layers["l" + str(i+1)] = tf.matmul(\
-                    weights["h" + str(i-1)], weights["h" + str(i)])
+                    self.tf_weights["h" + str(i-1)],\
+                    self.tf_weights["h" + str(i)])
 
         if len(self.hidden_layer_number_neurons) == 0:
             self.tf_layers["out"] = tf.matmul(
-                x_vector, weights['out'])
+                x_vector, self.tf_weights['out'])
         else:
             self.tf_layers["out"] = tf.matmul(\
-                weights["h" + str(len(self.hidden_layer_number_neurons))],\
-                weights['out'])
+                self.tf_weights["h" +\
+                    str(len(self.hidden_layer_number_neurons))],\
+                self.tf_weights['out'])
 
         # Construct model
         logits = neural_net(x_vector)
