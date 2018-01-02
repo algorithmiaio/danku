@@ -8,7 +8,7 @@ class Dataset(object):
     def __init__(self):
         self.partition_size = 5
         self.max_num_data_groups = 100
-        self.training_data_group_size = int(0.7 * self.max_num_data_groups)
+        self.training_data_group_size = int(0.8 * self.max_num_data_groups)
         self.num_data_groups = self.max_num_data_groups /\
             self.partition_size
         self.testing_data_group_size = self.max_num_data_groups -\
