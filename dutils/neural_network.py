@@ -38,8 +38,10 @@ class NeuralNetwork():
         self.tf_layers = None
 
     def init_network(self):
-        x_vector = tf.placeholder("float", [None, self.input_layer_number_neurons])
-        y_vector = tf.placeholder("float", [None, self.output_layer_number_neurons])
+        x_vector = tf.placeholder("float",\
+            [None, self.input_layer_number_neurons])
+        y_vector = tf.placeholder("float",\
+            [None, self.output_layer_number_neurons])
 
         # Initialize weight variables
         self.tf_weights = {}
@@ -47,14 +49,14 @@ class NeuralNetwork():
             if i == 0:
                 self.tf_weights["h" + str(i+1)] = tf.Variable(tf.random_normal([\
                     self.input_layer_number_neurons,\
-                    self.hidden_layer_number_neurons[i]])),
+                    self.hidden_layer_number_neurons[i]]))
                 self.weights.append(\
                     [self.input_layer_number_neurons * [0]] *\
                     self.hidden_layer_number_neurons[i])
             else:
                 self.tf_weights["h" + str(i+1)] = tf.Variable(tf.random_normal([\
                     self.hidden_layer_number_neurons[i-1],\
-                    self.hidden_layer_number_neurons[i]])),
+                    self.hidden_layer_number_neurons[i]]))
                 self.weights.append(\
                     [self.hidden_layer_number_neurons[i-1] * [0]] *\
                     self.hidden_layer_number_neurons[i]
