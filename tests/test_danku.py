@@ -7,7 +7,10 @@ def test_python_solidity_hashing_compatability():
 def test_dataset_partitioning():
     assert(False)
 
-def test_train_neural_network():
+def test_train_single_layer_neural_network():
+    assert(False)
+
+def test_train_multi_layer_neural_network():
     assert(False)
 
 def test_danku_init():
