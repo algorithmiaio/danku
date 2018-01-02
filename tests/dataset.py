@@ -2,6 +2,7 @@
 # Data format is (X, Y, C)
 # Where X and Y are the coordinates, and C is the class
 import random
+from hashlib import sha256
 
 class Dataset(object):
     def __init__(self):
@@ -20,7 +21,12 @@ class Dataset(object):
         return list(map(lambda x: random.randint(0, 2**32), l))
 
     def sha_data_group(self, data_group, nonce):
-        # TODO: Get the sha3-keccak hash of the given data group w/ a nonce
+        serialized_dg = b""
+        for data_point in data_group:
+            serialized_dg += data_point.to_bytes(32, byteorder="big")
+        serialized_dg += nonce.to_bytes(32, byteorder="big")
+        return sha256(serialized_dg).digest()
+        
     def partition_dataset(self, training_index):
         # TODO: Partition the dataset based on the training indexes
         # TODO: ALso generate hashes of partitioned data groups
