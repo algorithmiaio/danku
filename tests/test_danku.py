@@ -1,4 +1,7 @@
+from . import SampleCircleDataset
+
 def test_python_solidity_hashing_compatability():
+    # Make sure Python and solidity hashes the data groups in the same manner
     assert(False)
 
 def test_dataset_partitioning():
