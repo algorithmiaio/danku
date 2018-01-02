@@ -1,6 +1,7 @@
 # Simple datasets designed for danku contracts
 # Data format is (X, Y, C)
 # Where X and Y are the coordinates, and C is the class
+import random
 
 class Dataset(object):
     def __init__(self):
@@ -11,8 +12,13 @@ class Dataset(object):
             self.training_data_group_size
         self.dimensions = (13, 13)
         self.data = []
+
     def generate_nonce(self):
-        # TODO: Generate nonces that will be used for later
+        total_size = self.max_num_data_groups / self.partition_size
+        random.randint(0, 2**32)
+        l = total_size * [None]
+        return list(map(lambda x: random.randint(0, 2**32), l))
+
     def sha_data_group(self, data_group, nonce):
         # TODO: Get the sha3-keccak hash of the given data group w/ a nonce
     def partition_dataset(self, training_index):
