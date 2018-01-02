@@ -9,16 +9,20 @@ class Dataset(object):
         self.partition_size = 5
         self.max_num_data_groups = 100
         self.training_data_group_size = 70
+        self.num_data_groups = self.max_num_data_groups /\
+            self.partition_size
         self.testing_data_group_size = self.max_num_data_groups -\
             self.training_data_group_size
         self.dimensions = (13, 13)
         self.data = []
+        self.train_data = []
+        self.test_data = []
+        self.sha_data_group = []
+        self.nonce = []
 
     def generate_nonce(self):
-        total_size = self.max_num_data_groups / self.partition_size
-        random.randint(0, 2**32)
-        l = total_size * [None]
-        return list(map(lambda x: random.randint(0, 2**32), l))
+        l = self.num_data_groups * [None]
+        self.nonce = list(map(lambda x: random.randint(0, 2**32), l))
 
     def sha_data_group(self, data_group, nonce):
         # TODO: Also check if sha3_256() keccak version works
@@ -28,10 +32,22 @@ class Dataset(object):
         serialized_dg += nonce.to_bytes(32, byteorder="big")
         return sha256(serialized_dg).digest()
 
-    def partition_dataset(self, training_index):
-        # TODO: Partition the dataset based on the training indexes
-        # TODO: ALso generate hashes of partitioned data groups
+    def sha_all_data_groups(self, data_groups, nonces):
+        assert(len(data_groups) == len(nonces))
+        for i in range(len(nonces)):
+            self.sha_data_group.append(data_groups[i], nonces[i])
 
+    def partition_dataset(self, training_partition, testing_partition):
+        for t_index in training_partition:
+            self.train_data.append(self.data[t_index])
+        for t_index in testing_partition:
+            self.test_data.append(self.data[t_index])
+
+    def danku_init(self, training_partition, testing_partition):
+        # Initialize all of the danku stuff with partition info
+        self.partition_dataset(training_partition, testing_partition)
+        self.generate_nonce()
+        self.sha_all_data_groups()
 
 class SampleCircleDataset(Dataset):
     '''
