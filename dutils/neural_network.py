@@ -79,8 +79,8 @@ class NeuralNetwork():
                     x_vector, self.tf_weights["h" + str(i+1)])
             else:
                 self.tf_layers["l" + str(i+1)] = tf.matmul(\
-                    self.tf_weights["h" + str(i-1)],\
-                    self.tf_weights["h" + str(i)])
+                    self.tf_weights["h" + str(i)],\
+                    self.tf_weights["h" + str(i+1)])
 
         if len(self.hidden_layer_number_neurons) == 0:
             self.tf_layers["out"] = tf.matmul(
