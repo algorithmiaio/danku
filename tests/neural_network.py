@@ -76,10 +76,10 @@ class NeuralNetwork():
         for i in range(len(self.hidden_layer_number_neurons)):
             if i == 0:
                 self.tf_layers["l" + str(i+1)] = tf.matmul(\
-                    x_vector, weights["h" + str(i+1)]))
+                    x_vector, weights["h" + str(i+1)])
             else:
                 self.tf_layers["l" + str(i+1)] = tf.matmul(\
-                    weights["h" + str(i-1)], weights["h" + str(i)]))
+                    weights["h" + str(i-1)], weights["h" + str(i)])
 
         if len(self.hidden_layer_number_neurons) == 0:
             self.tf_layers["out"] = tf.matmul(
@@ -163,7 +163,9 @@ class NeuralNetwork():
     def pack_weights(self):
         # TODO: Weights should be serialized into a 1-dimension array in the
         # format defined in the danku contract
+        return
 
     def unpack_weights(self):
         # TODO: Weights should be serialized into a 3-dimension array in the
         # format defined in the danku contract
+        return
