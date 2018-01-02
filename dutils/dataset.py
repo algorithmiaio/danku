@@ -44,6 +44,8 @@ class Dataset(object):
             self.test_data.append(self.data[t_index])
 
     def danku_init(self, training_partition, testing_partition):
+        # Make sure total dataset size is a multiplicative of partition size
+        assert(self.max_num_data_groups % self.partition_size == 0)
         # Initialize all of the danku stuff with partition info
         self.partition_dataset(training_partition, testing_partition)
         self.generate_nonce()
