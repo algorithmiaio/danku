@@ -3,7 +3,7 @@
 import tensorflow as tf
 
 class NeuralNetwork():
-    def __init__(self, il_nn, ol_nn, hl_nn, lr=0.1, ns=100, bs=10, ds=10):
+    def __init__(self, il_nn, hl_nn, ol_nn, lr=0.1, ns=100, bs=10, ds=10):
         # Making Python type-safe!
         if not isinstance(lr, int) and not isinstance(lr, float):
             raise Exception("Learning rate must be an integer or float.")
