@@ -34,48 +34,58 @@ class NeuralNetwork():
         self.hidden_layer_number_neurons = hl_nn
         self.train_data = []
         self.test_data = []
-        self.weights = None
+        self.weights = []
+        self.tf_weights = None
+        self.tf_init = None
+        self.tf_layers = None
 
     def init_network(self):
         x_vector = tf.placeholder("float", [None, self.input_layer_number_neurons])
         y_vector = tf.placeholder("float", [None, self.output_layer_number_neurons])
 
         # Initialize weight variables
-        weights = {}
+        self.tf_weights = {}
         for i in range(len(self.hidden_layer_number_neurons)):
             if i == 0:
-                weights["h" + str(i+1)] = tf.Variable(tf.random_normal([\
+                self.tf_weights["h" + str(i+1)] = tf.Variable(tf.random_normal([\
                     self.input_layer_number_neurons,\
                     self.hidden_layer_number_neurons[i]])),
+                self.weights.append(\
+                    [self.input_layer_number_neurons * [0]] *\
+                    self.hidden_layer_number_neurons[i])
             else:
-                weights["h" + str(i+1)] = tf.Variable(tf.random_normal([\
+                self.tf_weights["h" + str(i+1)] = tf.Variable(tf.random_normal([\
                     self.hidden_layer_number_neurons[i-1],\
                     self.hidden_layer_number_neurons[i]])),
+                self.weights.append(\
+                    [self.hidden_layer_number_neurons[i-1] * [0]] *\
+                    self.hidden_layer_number_neurons[i]
+                )
 
         if len(self.hidden_layer_number_neurons) == 0:
-            weights["out"] = tf.Variable(tf.random_normal([\
+            self.tf_weights["out"] = tf.Variable(tf.random_normal([\
                 self.input_layer_number_neurons,\
                 self.output_layer_number_neurons]))
         else:
-            weights["out"] = tf.Variable(tf.random_normal([\
+            self.tf_weights["out"] = tf.Variable(tf.random_normal([\
                 self.hidden_layer_number_neurons[-1],
                 self.output_layer_number_neurons]))
 
         # Initialize layers
-        layers = {}
+        self.tf_layers = {}
         for i in range(len(self.hidden_layer_number_neurons)):
             if i == 0:
-                layers["l" + str(i+1)] = tf.matmul(\
+                self.tf_layers["l" + str(i+1)] = tf.matmul(\
                     x_vector, weights["h" + str(i+1)]))
             else:
-                layers["l" + str(i+1)] = tf.matmul(\
+                self.tf_layers["l" + str(i+1)] = tf.matmul(\
                     weights["h" + str(i-1)], weights["h" + str(i)]))
 
         if len(self.hidden_layer_number_neurons) == 0:
-            layers["out"] = tf.matmul(
+            self.tf_layers["out"] = tf.matmul(
                 x_vector, weights['out'])
         else:
-            layers["out"] = tf.matmul(\
+            self.tf_layers["out"] = tf.matmul(\
                 weights["h" + str(len(self.hidden_layer_number_neurons))],\
                 weights['out'])
 
@@ -94,11 +104,11 @@ class NeuralNetwork():
         accuracy = tf.reduce_mean(tf.cast(compare_pred, tf.float32))
 
         # Initialize tf variables
-        init = tf.global_variables_initializer()
+        self.tf_init = tf.global_variables_initializer()
 
     def train(self):
         with tf.Session() as sess:
-            sess.run(init)
+            sess.run(self.tf_init)
             for step in range(1, self.number_steps+1):
                 x_train_vector = map(lambda x: x[:self.prediction_size],\
                     self.train_data)
@@ -126,6 +136,21 @@ class NeuralNetwork():
                 sess.run(accuracy,\
                     feed_dict={X: x_test_vector, Y: y_test_vector}))
 
+            print("Saving weights...")
+            # Save the weights
+            for l_i in range(len(self.hidden_layer_number_neurons)):
+                for l_ni in range(len(self.weights[l_i])):
+                    pass
+                    for pl_ni in range(len(self.weights[l_i][l_ni])):
+                        self.weights[l_i][l_ni][pl_ni] = self.tf_weights["h" + str(l_i+1)][pl_ni][l_ni].eval()
+                        # For last layer
+                        if l_i == len(self.hidden_layer_number_neurons)-1:
+                            self.weights[l_i][l_ni][pl_ni] = self.tf_weights["out"][pl_ni][l_ni].eval()
+                        # For hidden layers
+                        else:
+                            self.weights[l_i][l_ni][pl_ni] = self.tf_weights["h" + str(l_i+1)][pl_ni][l_ni].eval()
+            print("Weights saved!")
+
     def load_dataset(self, train_data, dps, ps):
         self.data_point_size = dps
         self.prediction_size = ps
@@ -135,6 +160,10 @@ class NeuralNetwork():
         # Load dataset
         self.train_data = train_data
 
-    def get_weights(self):
-        # TODO: Get the weights of the trained model
-        # TODO: Weights should be in the format defined in the danku contract
+    def pack_weights(self):
+        # TODO: Weights should be serialized into a 1-dimension array in the
+        # format defined in the danku contract
+
+    def unpack_weights(self):
+        # TODO: Weights should be serialized into a 3-dimension array in the
+        # format defined in the danku contract
