@@ -11,10 +11,10 @@ class Dataset(object):
         self.max_num_data_groups = max_num_data_groups
         self.training_data_group_size = int(training_percentage *\
             self.max_num_data_groups)
-        self.num_data_groups = int(self.max_num_data_groups /\
-            self.partition_size)
         self.testing_data_group_size = self.max_num_data_groups -\
             self.training_data_group_size
+        self.num_data_groups = int(self.max_num_data_groups /\
+            self.partition_size)
         self.dimensions = (13, 13)
         self.data = []
         self.train_data = []
