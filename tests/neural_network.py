@@ -1,8 +1,6 @@
 # A simple linear neural network implementation in Tensorflow
 # Trained on the sample datasets
 import tensorflow as tf
-from . import SampleSwirlDataset, SampleCircleDataset,\
-SampleHalfDividedDataset, SampleAcrossCornerDataset
 
 class NeuralNetwork():
     def __init__(self, il_nn, ol_nn, hl_nn, lr=0.1, ns=100, bs=10, ds=10):
