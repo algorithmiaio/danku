@@ -11,7 +11,7 @@ class NeuralNetwork():
             raise Exception("Number of steps must be an integer.")
         if not isinstance(bs, int):
             raise Exception("Batch size must be an integer.")
-        if not isinstance(il_nn. int):
+        if not isinstance(il_nn, int):
             raise Exception("Input layer number of neurons must be an integer.")
         if not isinstance(ol_nn, int):
             raise Exception("Output layer number of neurons must be an integer.\
