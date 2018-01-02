@@ -1,6 +1,8 @@
 # A simple linear neural network implementation in Tensorflow
 # Trained on the sample datasets
 import tensorflow as tf
+from . import SampleSwirlDataset, SampleCircleDataset,\
+SampleHalfDividedDataset, SampleAcrossCornerDataset
 
 class NeuralNetwork():
     def __init__(self, lr, ns, bs, il_nn, ol_nn, hl_nn):
@@ -32,13 +34,18 @@ class NeuralNetwork():
         self.train_data = []
         self.test_data = []
         self.weights = None
-    def load_dataset(self, dataset, dps, ps):
+    def load_dataset(self, train_data, dps, ps):
         self.data_point_size = dps
         self.prediction_size = ps
-        # TODO: Validate dataset dimensions
-        # TODO: Load dataset
+        # Validate dataset dimensions
+        for data_point in dataset:
+            assert(len(data_point) == dps)
+        # Load dataset
+        self.train_data = train_data
+
     def train(self):
         # TODO: Train on the given dataset
+
     def get_weights(self):
         # TODO: Get the weights of the trained model
         # TODO: Weights should be in the format defined in the danku contract
