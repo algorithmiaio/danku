@@ -5,14 +5,14 @@ import random
 from hashlib import sha256
 
 class Dataset(object):
-    def __init__(self, max_num_data_groups=100, traiaing_percentage=0.8,\
+    def __init__(self, max_num_data_groups=100, training_percentage=0.8,\
         partition_size=5):
         self.partition_size = partition_size
         self.max_num_data_groups = max_num_data_groups
-        self.training_data_group_size = int(traiaing_percentage *\
+        self.training_data_group_size = int(training_percentage *\
             self.max_num_data_groups)
-        self.num_data_groups = self.max_num_data_groups /\
-            self.partition_size
+        self.num_data_groups = int(self.max_num_data_groups /\
+            self.partition_size)
         self.testing_data_group_size = self.max_num_data_groups -\
             self.training_data_group_size
         self.dimensions = (13, 13)
