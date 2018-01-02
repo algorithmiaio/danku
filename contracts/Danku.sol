@@ -43,6 +43,7 @@ contract Danku {
   uint constant datapoint_size = 3;
   uint constant prediction_size = 1;
   // Max number of data groups
+  // Change this to your data group size
   uint8 constant max_num_data_groups = 100;
   // Training partition size
   uint8 constant training_data_group_size = 70;
