@@ -6,9 +6,9 @@ contract Danku {
   function Danku() public {
     // Neural Network Structure:
     //
-    // (required) input layer x number of neurons
+    // (assertd) input layer x number of neurons
     // (optional) hidden layers x number of neurons
-    // (required) output layer x number of neurons
+    // (assertd) output layer x number of neurons
   }
   struct Submission {
       address payment_address;
@@ -88,7 +88,7 @@ contract Danku {
     init1_block_height = block.number;
 
     // Make sure there are in total 20 hashed data groups
-    assert(_hashed_data_groups.length != max_num_data_groups/partition_size);
+    assert(_hashed_data_groups.length == max_num_data_groups/partition_size);
     hashed_data_groups = _hashed_data_groups;
     // Make sure submission, evaluation and test reaveal times are set to
     // at least 1 block
@@ -97,7 +97,7 @@ contract Danku {
     assert(test_reveal_t > 0);
     // Accuracy criteria example: 85.9% => 8,590
     // 100 % => 10,000
-    assert(model_accuracy_criteria > 0);
+    assert(accuracy_criteria > 0);
     submission_stage_block_size = submission_t;
     evaluation_stage_block_size = evaluation_t;
     reveal_test_data_groups_block_size = test_reveal_t;
