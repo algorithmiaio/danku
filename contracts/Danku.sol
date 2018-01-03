@@ -195,7 +195,7 @@ contract Danku {
     // Verify data group hashes
     int max_dg_s = round_up_division(int(_test_data_groups.length), int(testing_data_group_size/partition_size));
     for (uint i = 0; i < _test_data_groups.length; i++) {
-      assert(sha_data_group(_test_data_groups, _test_data_group_nonces[i], max_dg_s, i) == hashed_data_groups[training_partition[i]]);
+      assert(sha_data_group(_test_data_groups, _test_data_group_nonces[i], max_dg_s, i) == hashed_data_groups[testing_partition[i]]);
     }
     // Assign testing data
     unpack_data_groups(_test_data_groups, false);
