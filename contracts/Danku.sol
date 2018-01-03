@@ -49,9 +49,9 @@ contract Danku {
   uint8 constant training_data_group_size = 80;
   // Testing partition size
   uint8 constant testing_data_group_size = max_num_data_groups - training_data_group_size;
-  // Dataset is divided into 20 data groups.
+  // Dataset is divided into data groups.
   // Every data group includes a nonce.
-  // Look at sha_data_group() for more detail about hasing a data group
+  // Look at sha_data_group() for more detail about hashing a data group
   bytes32[max_num_data_groups/partition_size] hashed_data_groups;
   // Nonces are revelead together with data groups
   uint[max_num_data_groups/partition_size] data_group_nonces;
