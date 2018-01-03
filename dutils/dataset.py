@@ -3,6 +3,7 @@
 # Where X and Y are the coordinates, and C is the class
 import random
 from secrets import choice, randbelow
+from random import shuffle
 from hashlib import sha256
 
 class Dataset(object):
@@ -72,9 +73,14 @@ class Dataset(object):
             training_partition = self.training_partition
             testing_partition = self.testing_partition
 
+        self.shuffle()
         self.generate_nonce()
         self.partition_dataset(training_partition, testing_partition)
         self.sha_all_data_groups()
+
+    def shuffle(self):
+        # Shuffle the dataset
+        shuffle(self.data)
 
     def init_random_training_indexes(self):
         # For testing purposes
