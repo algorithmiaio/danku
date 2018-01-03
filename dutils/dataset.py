@@ -73,7 +73,6 @@ class Dataset(object):
             training_partition = self.training_partition
             testing_partition = self.testing_partition
 
-        self.shuffle()
         self.generate_nonce()
         self.partition_dataset(training_partition, testing_partition)
         self.sha_all_data_groups()
@@ -145,6 +144,7 @@ class SampleCircleDataset(Dataset):
         max_num_data_groups = len(data)
         super().__init__(max_num_data_groups=max_num_data_groups)
         self.data = data
+        self.shuffle()
         self.dps = 3
 
 class SampleSwirlDataset(Dataset):
@@ -181,6 +181,7 @@ class SampleSwirlDataset(Dataset):
         max_num_data_groups = len(data)
         super().__init__(max_num_data_groups=max_num_data_groups)
         self.data = data
+        self.shuffle()
         self.dps = 3
 
 class SampleHalfDividedDataset(Dataset):
@@ -212,6 +213,7 @@ class SampleHalfDividedDataset(Dataset):
         max_num_data_groups = len(data)
         super().__init__(max_num_data_groups=max_num_data_groups)
         self.data = data
+        self.shuffle()
         self.dps = 3
 
 class SampleAcrossCornerDataset(Dataset):
@@ -243,4 +245,5 @@ class SampleAcrossCornerDataset(Dataset):
         max_num_data_groups = len(data)
         super().__init__(max_num_data_groups=max_num_data_groups)
         self.data = data
+        self.shuffle()
         self.dps = 3
