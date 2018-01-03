@@ -18,7 +18,6 @@ def test_2lnn_load_dataset():
     ol_nn = 2
     nn = NeuralNetwork(il_nn, hl_nn, ol_nn)
     scd = SampleCircleDataset()
-    num_data_groups = int(scd.max_num_data_groups/scd.partition_size)
     scd.init_random_training_indexes()
     scd.danku_init()
     nn.load_dataset(scd.train_data, il_nn, ol_nn)
@@ -33,7 +32,6 @@ def test_train_2lnn():
     ol_nn = 2
     nn = NeuralNetwork(il_nn, hl_nn, ol_nn)
     scd = SampleCircleDataset()
-    num_data_groups = int(scd.max_num_data_groups/scd.partition_size)
     scd.init_random_training_indexes()
     scd.danku_init()
     nn.load_dataset(scd.train_data, il_nn, ol_nn)
