@@ -30,6 +30,8 @@ class NeuralNetwork():
         self.input_layer_number_neurons = il_nn
         self.output_layer_number_neurons = ol_nn
         self.hidden_layer_number_neurons = hl_nn
+        self.data_point_size = self.input_layer_number_neurons +\
+            self.output_layer_number_neurons
         self.train_data = []
         self.test_data = []
         self.weights = []
@@ -115,10 +117,12 @@ class NeuralNetwork():
         with tf.Session() as sess:
             sess.run(self.tf_init)
             for step in range(1, self.number_steps+1):
-                x_train_vector = list(map(lambda x: list(x[:self.input_size]),\
+                x_train_vector = list(map(lambda x: list(x[:self.input_layer_number_neurons]),\
                     self.train_data))
-                y_train_vector = list(map(lambda x: list(x[self.input_size:]),\
+                y_train_vector = list(map(lambda x: list(x[self.input_layer_number_neurons:]),\
                     self.train_data))
+                print(x_train_vector)
+                print(y_train_vector)
                 # Backpropogation
                 sess.run(self.train_op,
                     feed_dict={self.x_vector: x_train_vector, self.y_vector: y_train_vector})
@@ -132,9 +136,9 @@ class NeuralNetwork():
 
             print("Training Finished!")
 
-            x_test_vector = list(map(lambda x: list(x[:self.input_size]),\
+            x_test_vector = list(map(lambda x: list(x[:self.input_layer_number_neurons]),\
                 self.test_data))
-            y_test_vector = list(map(lambda x: list(x[self.input_size:]),\
+            y_test_vector = list(map(lambda x: list(x[self.input_layer_number_neurons:]),\
                 self.test_data))
             print(x_test_vector)
             print(y_test_vector)
@@ -158,15 +162,12 @@ class NeuralNetwork():
                             self.weights[l_i][l_ni][pl_ni] = self.tf_weights["h" + str(l_i+1)][pl_ni][l_ni].eval()
             print("Weights saved!")
 
-    def load_dataset(self, dataset_obj, i_s, p_s):
-        self.input_size = i_s
-        self.prediction_size = p_s
-        self.data_point_size = i_s + p_s
+    def load_dataset(self, dataset_obj):
         # Validate dataset dimensions
         for data_point in dataset_obj.train_data:
-                assert(len(data_point) == i_s+p_s)
+                assert(len(data_point) == self.data_point_size)
         for data_point in dataset_obj.test_data:
-                assert(len(data_point) == i_s+p_s)
+                assert(len(data_point) == self.data_point_size)
         # Load dataset
         self.train_data = dataset_obj.train_data
         self.test_data = dataset_obj.test_data
