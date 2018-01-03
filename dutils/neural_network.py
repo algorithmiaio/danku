@@ -157,8 +157,9 @@ class NeuralNetwork():
         self.data_point_size = dps
         self.prediction_size = ps
         # Validate dataset dimensions
-        for data_point in dataset:
-            assert(len(data_point) == dps)
+        for data_group in train_data:
+            for data_point in data_group:
+                assert(len(data_point) == dps)
         # Load dataset
         self.train_data = train_data
 
