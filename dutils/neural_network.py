@@ -98,15 +98,15 @@ class NeuralNetwork():
         prediction = tf.nn.relu(logits)
 
         # Loss and optimizer
-        loss_op = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(
+        self.loss_op = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(
             logits=logits, labels=self.y_vector))
         optimizer = tf.train.AdamOptimizer(learning_rate=self.learning_rate)
-        self.train_op = optimizer.minimize(loss_op)
+        self.train_op = optimizer.minimize(self.loss_op)
 
         # Model evaluation
         compare_pred = tf.equal(tf.argmax(prediction, 1),\
             tf.argmax(self.y_vector, 1))
-        accuracy = tf.reduce_mean(tf.cast(compare_pred, tf.float32))
+        self.accuracy = tf.reduce_mean(tf.cast(compare_pred, tf.float32))
 
         # Initialize tf variables
         self.tf_init = tf.global_variables_initializer()
@@ -115,16 +115,16 @@ class NeuralNetwork():
         with tf.Session() as sess:
             sess.run(self.tf_init)
             for step in range(1, self.number_steps+1):
-                x_train_vector = map(lambda x: x[:self.prediction_size],\
-                    self.train_data)
-                y_train_vector = map(lambda x: x[self.prediction_size:],\
-                    self.train_data)
+                x_train_vector = list(map(lambda x: list(x[:self.input_size]),\
+                    self.train_data))
+                y_train_vector = list(map(lambda x: list(x[self.input_size:]),\
+                    self.train_data))
                 # Backpropogation
                 sess.run(self.train_op,
                     feed_dict={self.x_vector: x_train_vector, self.y_vector: y_train_vector})
                 if step % self.display_step == 0 or step == 1:
                     # Calculate loss and accuracy
-                    loss, acc = sess.run([loss_op, accuracy],\
+                    loss, acc = sess.run([self.loss_op, self.accuracy],\
                         feed_dict={self.x_vector: x_train_vector, self.y_vector: y_train_vector})
                     print("Step " + str(step) + ", Loss= " + \
                           "{:.4f}".format(loss) + ", Training Accuracy= " + \
@@ -132,13 +132,15 @@ class NeuralNetwork():
 
             print("Training Finished!")
 
-            x_test_vector = map(lambda x: x[:self.prediction_size],\
-                self.test_data)
-            y_test_vector = map(lambda x: x[self.prediction_size:],\
-                self.test_data)
+            x_test_vector = list(map(lambda x: list(x[:self.input_size]),\
+                self.test_data))
+            y_test_vector = list(map(lambda x: list(x[self.input_size:]),\
+                self.test_data))
+            print(x_test_vector)
+            print(y_test_vector)
             # Get accuracy with test dataset
             print("Testing Accuracy:", \
-                sess.run(accuracy,\
+                sess.run(self.accuracy,\
                     feed_dict={self.x_vector: x_test_vector, self.y_vector: y_test_vector}))
 
             print("Saving weights...")
@@ -156,15 +158,18 @@ class NeuralNetwork():
                             self.weights[l_i][l_ni][pl_ni] = self.tf_weights["h" + str(l_i+1)][pl_ni][l_ni].eval()
             print("Weights saved!")
 
-    def load_dataset(self, train_data, dps, ps):
-        self.data_point_size = dps
-        self.prediction_size = ps
+    def load_dataset(self, dataset_obj, i_s, p_s):
+        self.input_size = i_s
+        self.prediction_size = p_s
+        self.data_point_size = i_s + p_s
         # Validate dataset dimensions
-        for data_group in train_data:
-            for data_point in data_group:
-                assert(len(data_point) == dps)
+        for data_point in dataset_obj.train_data:
+                assert(len(data_point) == i_s+p_s)
+        for data_point in dataset_obj.test_data:
+                assert(len(data_point) == i_s+p_s)
         # Load dataset
-        self.train_data = train_data
+        self.train_data = dataset_obj.train_data
+        self.test_data = dataset_obj.test_data
 
     def pack_weights(self):
         # TODO: Weights should be serialized into a 1-dimension array in the

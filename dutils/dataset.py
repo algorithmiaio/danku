@@ -17,7 +17,7 @@ class Dataset(object):
             self.training_data_group_size
         self.num_data_groups = int(self.max_num_data_groups /\
             self.partition_size)
-        self.dimensions = (13, 13)
+        self.dps = None
         self.data = []
         self.train_data = []
         self.test_data = []
@@ -54,13 +54,11 @@ class Dataset(object):
     def partition_dataset(self, training_partition, testing_partition):
         # Partition the dataset
         for t_index in training_partition:
-            start = t_index * self.partition_size
-            end = start + self.partition_size
-            self.train_data.append(self.data[start:end])
+            for i in range(self.partition_size):
+                self.train_data.append(self.data[t_index+i])
         for t_index in testing_partition:
-            start = t_index * self.partition_size
-            end = start + self.partition_size
-            self.test_data.append(self.data[start:end])
+            for i in range(self.partition_size):
+                self.test_data.append(self.data[t_index+i])
         # Partition the nonces
         for t_index in training_partition:
             self.train_nonce.append(self.nonce[t_index])
@@ -93,6 +91,20 @@ class Dataset(object):
                 test_index.append(index)
         self.training_partition = train_index
         self.testing_partition = test_index
+    def pack_data(self, data):
+        packed_data = []
+        for item in data:
+            for point in item:
+                packed_data.append(item)
+        return packed_data
+    def unpack_data(self, data):
+        unpacked_data = []
+        total_iter = range(int(len(data) / self.dps))
+        for i in total_iter:
+            start = i * self.dps
+            end = start + self.dps
+            unpacked_data.append(data[start:end])
+        return unpacked_data
 
 class SampleCircleDataset(Dataset):
     '''
@@ -127,6 +139,7 @@ class SampleCircleDataset(Dataset):
         max_num_data_groups = len(data)
         super().__init__(max_num_data_groups=max_num_data_groups)
         self.data = data
+        self.dps = 3
 
 class SampleSwirlDataset(Dataset):
     '''
@@ -162,6 +175,7 @@ class SampleSwirlDataset(Dataset):
         max_num_data_groups = len(data)
         super().__init__(max_num_data_groups=max_num_data_groups)
         self.data = data
+        self.dps = 3
 
 class SampleHalfDividedDataset(Dataset):
     '''
@@ -192,6 +206,7 @@ class SampleHalfDividedDataset(Dataset):
         max_num_data_groups = len(data)
         super().__init__(max_num_data_groups=max_num_data_groups)
         self.data = data
+        self.dps = 3
 
 class SampleAcrossCornerDataset(Dataset):
     '''
@@ -222,3 +237,4 @@ class SampleAcrossCornerDataset(Dataset):
         max_num_data_groups = len(data)
         super().__init__(max_num_data_groups=max_num_data_groups)
         self.data = data
+        self.dps = 3
