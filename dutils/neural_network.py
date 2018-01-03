@@ -36,26 +36,28 @@ class NeuralNetwork():
         self.tf_weights = None
         self.tf_init = None
         self.tf_layers = None
+        self.x_vector = None
+        self.y_vector = None
 
     def init_network(self):
-        x_vector = tf.placeholder("float",\
+        self.x_vector = tf.placeholder("float",\
             [None, self.input_layer_number_neurons])
-        y_vector = tf.placeholder("float",\
+        self.y_vector = tf.placeholder("float",\
             [None, self.output_layer_number_neurons])
 
         # Initialize weight variables
         self.tf_weights = {}
         for i in range(len(self.hidden_layer_number_neurons)):
             if i == 0:
-                self.tf_weights["h" + str(i+1)] = tf.Variable(tf.random_normal([\
-                    self.input_layer_number_neurons,\
+                self.tf_weights["h" + str(i+1)] = tf.Variable(\
+                    tf.random_normal([self.input_layer_number_neurons,\
                     self.hidden_layer_number_neurons[i]]))
                 self.weights.append(\
                     [self.input_layer_number_neurons * [0]] *\
                     self.hidden_layer_number_neurons[i])
             else:
-                self.tf_weights["h" + str(i+1)] = tf.Variable(tf.random_normal([\
-                    self.hidden_layer_number_neurons[i-1],\
+                self.tf_weights["h" + str(i+1)] = tf.Variable(\
+                    tf.random_normal([self.hidden_layer_number_neurons[i-1],\
                     self.hidden_layer_number_neurons[i]]))
                 self.weights.append(\
                     [self.hidden_layer_number_neurons[i-1] * [0]] *\
@@ -76,7 +78,7 @@ class NeuralNetwork():
         for i in range(len(self.hidden_layer_number_neurons)):
             if i == 0:
                 self.tf_layers["l" + str(i+1)] = tf.matmul(\
-                    x_vector, self.tf_weights["h" + str(i+1)])
+                    self.x_vector, self.tf_weights["h" + str(i+1)])
             else:
                 self.tf_layers["l" + str(i+1)] = tf.matmul(\
                     self.tf_weights["h" + str(i)],\
@@ -84,7 +86,7 @@ class NeuralNetwork():
 
         if len(self.hidden_layer_number_neurons) == 0:
             self.tf_layers["out"] = tf.matmul(
-                x_vector, self.tf_weights['out'])
+                self.x_vector, self.tf_weights['out'])
         else:
             self.tf_layers["out"] = tf.matmul(\
                 self.tf_weights["h" +\
@@ -97,12 +99,13 @@ class NeuralNetwork():
 
         # Loss and optimizer
         loss_op = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(
-            logits=logits, labels=y_vector))
+            logits=logits, labels=self.y_vector))
         optimizer = tf.train.AdamOptimizer(learning_rate=self.learning_rate)
-        train_op = optimizer.minimize(loss_op)
+        self.train_op = optimizer.minimize(loss_op)
 
         # Model evaluation
-        compare_pred = tf.equal(tf.argmax(prediction, 1), tf.argmax(y_vector, 1))
+        compare_pred = tf.equal(tf.argmax(prediction, 1),\
+            tf.argmax(self.y_vector, 1))
         accuracy = tf.reduce_mean(tf.cast(compare_pred, tf.float32))
 
         # Initialize tf variables
@@ -117,12 +120,12 @@ class NeuralNetwork():
                 y_train_vector = map(lambda x: x[self.prediction_size:],\
                     self.train_data)
                 # Backpropogation
-                sess.run(train_op,
-                    feed_dict={X: x_train_vector, Y: y_train_vector})
+                sess.run(self.train_op,
+                    feed_dict={self.x_vector: x_train_vector, self.y_vector: y_train_vector})
                 if step % self.display_step == 0 or step == 1:
                     # Calculate loss and accuracy
                     loss, acc = sess.run([loss_op, accuracy],\
-                        feed_dict={X: x_train_vector, Y: y_train_vector})
+                        feed_dict={self.x_vector: x_train_vector, self.y_vector: y_train_vector})
                     print("Step " + str(step) + ", Loss= " + \
                           "{:.4f}".format(loss) + ", Training Accuracy= " + \
                           "{:.3f}".format(acc))
@@ -136,7 +139,7 @@ class NeuralNetwork():
             # Get accuracy with test dataset
             print("Testing Accuracy:", \
                 sess.run(accuracy,\
-                    feed_dict={X: x_test_vector, Y: y_test_vector}))
+                    feed_dict={self.x_vector: x_test_vector, self.y_vector: y_test_vector}))
 
             print("Saving weights...")
             # Save the weights
