@@ -2,6 +2,7 @@
 # Data format is (X, Y, C)
 # Where X and Y are the coordinates, and C is the class
 import random
+from secrets import choice, randbelow
 from hashlib import sha256
 
 class Dataset(object):
@@ -9,6 +10,7 @@ class Dataset(object):
         partition_size=5):
         self.partition_size = partition_size
         self.max_num_data_groups = max_num_data_groups
+        self.training_percentage = training_percentage
         self.training_data_group_size = int(training_percentage *\
             self.max_num_data_groups)
         self.testing_data_group_size = self.max_num_data_groups -\
@@ -19,39 +21,78 @@ class Dataset(object):
         self.data = []
         self.train_data = []
         self.test_data = []
-        self.sha_data_group = []
+        self.train_nonce = []
+        self.test_nonce = []
+        self.hashed_data_group = []
         self.nonce = []
+        self.training_partition = []
+        self.testing_partition = []
         # Make sure total dataset size is a multiplicative of partition size
         assert(self.max_num_data_groups % self.partition_size == 0)
 
     def generate_nonce(self):
         l = self.num_data_groups * [None]
-        self.nonce = list(map(lambda x: random.randint(0, 2**32), l))
+        self.nonce = list(map(lambda x: randbelow(2**32), l))
 
     def sha_data_group(self, data_group, nonce):
         # TODO: Also check if sha3_256() keccak version works
         serialized_dg = b""
         for data_point in data_group:
-            serialized_dg += data_point.to_bytes(32, byteorder="big")
-        serialized_dg += nonce.to_bytes(32, byteorder="big")
+            for number in data_point:
+                serialized_dg += number.to_bytes(32, signed=True, byteorder="big")
+        serialized_dg += nonce.to_bytes(32, signed=True, byteorder="big")
         return sha256(serialized_dg).digest()
 
-    def sha_all_data_groups(self, data_groups, nonces):
-        assert(len(data_groups) == len(nonces))
-        for i in range(len(nonces)):
-            self.sha_data_group.append(data_groups[i], nonces[i])
+    def sha_all_data_groups(self):
+        assert(len(self.data)/self.partition_size == len(self.nonce))
+        for i in range(len(self.nonce)):
+            start = i * self.partition_size
+            end = start + self.partition_size
+            dg_hash = self.sha_data_group(self.data[start:end], self.nonce[i])
+            self.hashed_data_group.append(dg_hash)
 
     def partition_dataset(self, training_partition, testing_partition):
+        # Partition the dataset
         for t_index in training_partition:
-            self.train_data.append(self.data[t_index])
+            start = t_index * self.partition_size
+            end = start + self.partition_size
+            self.train_data.append(self.data[start:end])
         for t_index in testing_partition:
-            self.test_data.append(self.data[t_index])
+            start = t_index * self.partition_size
+            end = start + self.partition_size
+            self.test_data.append(self.data[start:end])
+        # Partition the nonces
+        for t_index in training_partition:
+            self.train_nonce.append(self.nonce[t_index])
+        for t_index in testing_partition:
+            self.test_nonce.append(self.nonce[t_index])
 
-    def danku_init(self, training_partition, testing_partition):
+    def danku_init(self, training_partition=None, testing_partition=None):
         # Initialize all of the danku stuff with partition info
-        self.partition_dataset(training_partition, testing_partition)
+        if isinstance(training_partition, type(None)) or \
+            isinstance(testing_partition, type(None)):
+            training_partition = self.training_partition
+            testing_partition = self.testing_partition
+
         self.generate_nonce()
+        self.partition_dataset(training_partition, testing_partition)
         self.sha_all_data_groups()
+
+    def init_random_training_indexes(self):
+        # For testing purposes
+        indexes = range(self.num_data_groups)
+        train_index = []
+        test_index = []
+        max_train_index = int(self.num_data_groups*self.training_percentage)
+        while len(train_index) < max_train_index:
+            random_index = choice(indexes)
+            if random_index not in train_index:
+                train_index.append(random_index)
+        for index in indexes:
+            if index not in train_index:
+                test_index.append(index)
+        self.training_partition = train_index
+        self.testing_partition = test_index
 
 class SampleCircleDataset(Dataset):
     '''
