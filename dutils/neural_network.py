@@ -90,13 +90,15 @@ class NeuralNetwork():
             self.tf_layers["out"] = tf.matmul(
                 self.x_vector, self.tf_weights['out'])
         else:
+            # Using the previous layer doesn't work. Need to create an
+            # equivalent placeholder instead
             self.tf_layers["out"] = tf.matmul(\
                 self.tf_weights["h" +\
                     str(len(self.hidden_layer_number_neurons))],\
-                self.tf_weights['out'])
-
+                self.tf_weights["out"])
         # Construct model
         logits = self.tf_layers["out"]
+        print(logits)
         prediction = tf.nn.relu(logits)
 
         # Loss and optimizer
@@ -140,8 +142,6 @@ class NeuralNetwork():
                 self.test_data))
             y_test_vector = list(map(lambda x: list(x[self.input_layer_number_neurons:]),\
                 self.test_data))
-            print(x_test_vector)
-            print(y_test_vector)
             # Get accuracy with test dataset
             print("Testing Accuracy:", \
                 sess.run(self.accuracy,\

@@ -51,6 +51,8 @@ def test_create_3_layer_nn():
     assert(not isinstance(nn.tf_init, type(None)))
     assert(not isinstance(nn.tf_layers, type(None)))
 
+# TODO: Get multi-layer NN's working
+
 def test_create_5_layer_nn():
     il_nn = 2
     hl_nn = [4,5,6]
