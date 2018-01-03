@@ -138,10 +138,8 @@ contract Danku {
     // Verify data group hashes
     for (uint i = 0; i < _train_data_group_nonces.length; i++) {
       // Order of revealed training data group must be the same with training partitions
-      // Infer data group size
-      int max_dg_s = round_up_division(int(_train_data_groups.length), int(training_data_group_size/partition_size));
       // 3rd parameter is true since we're sending training data
-      assert(sha_data_group(_train_data_groups, _train_data_group_nonces[i], max_dg_s, i) == hashed_data_groups[training_partition[i]]);
+      assert(sha_data_group(_train_data_groups, _train_data_group_nonces[i], i) == hashed_data_groups[training_partition[i]]);
     }
     // Assign training data
     unpack_data_groups(_train_data_groups, true);
@@ -193,9 +191,8 @@ contract Danku {
     assert(_test_data_groups.length == max_num_data_groups / partition_size - training_partition.length);
     assert(_test_data_group_nonces.length == max_num_data_groups / partition_size - training_partition.length);
     // Verify data group hashes
-    int max_dg_s = round_up_division(int(_test_data_groups.length), int(testing_data_group_size/partition_size));
     for (uint i = 0; i < _test_data_groups.length; i++) {
-      assert(sha_data_group(_test_data_groups, _test_data_group_nonces[i], max_dg_s, i) == hashed_data_groups[testing_partition[i]]);
+      assert(sha_data_group(_test_data_groups, _test_data_group_nonces[i], i) == hashed_data_groups[testing_partition[i]]);
     }
     // Assign testing data
     unpack_data_groups(_test_data_groups, false);
@@ -410,13 +407,13 @@ contract Danku {
     }
   }
 
-    function sha_data_group(int256[] data_group, int256 data_group_nonce, int256 max_data_group_size, uint256 data_group_index) private pure returns (bytes32) {
+    function sha_data_group(int256[] data_group, int256 data_group_nonce, uint256 data_group_index) private pure returns (bytes32) {
       // Extract the relevant data points for the given data group index
       // We concat all data groups and add the nounce to the end of the array
       // and get the sha256 for the array
       int256[] memory all_data_points;
       uint index_tracker = 0;
-      uint256 total_size = datapoint_size * uint(max_data_group_size);
+      uint256 total_size = datapoint_size * partition_size;
       uint256 start_index = data_group_index * total_size;
       uint256 iter_limit = start_index + total_size;
 
