@@ -7,7 +7,7 @@ from random import shuffle
 from hashlib import sha256
 
 class Dataset(object):
-    def __init__(self, max_num_data_groups=100, training_percentage=0.8,\
+    def __init__(self, max_num_data_groups=100, training_percentage=0.7,\
         partition_size=5):
         self.partition_size = partition_size
         self.max_num_data_groups = max_num_data_groups
