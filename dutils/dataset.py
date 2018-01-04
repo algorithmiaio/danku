@@ -20,7 +20,7 @@ class Dataset(object):
             self.partition_size)
         self.num_train_data_groups = int(self.training_data_group_size/\
             self.partition_size)
-        self.num_test_data_groups = int(self.training_data_group_size/\
+        self.num_test_data_groups = int(self.testing_data_group_size/\
             self.partition_size)
         self.dps = None
         self.data = []
