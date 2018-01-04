@@ -112,14 +112,13 @@ contract Danku {
     // Make sure it's being called within 5 blocks on init1()
     // to minimize organizer influence on random index selection
     if (block.number <= init1_block_height+5) {
-      // Try to select random training indexes
-      if (set_data_indexes()) {
-        init_level = 2;
-      // If random selection fails, terminate contract
-      } else {
-        // Cancel contract
-        cancel_contract();
+      // Select random training indexes
+      uint[] memory array;
+      for (uint i = 0; i < max_num_data_groups/partition_size; i++) {
+        array[i] = i;
       }
+      randomly_select_indexes(array);
+      init_level = 2;
     } else {
       // Cancel the contract if init2() hasn't been called within 5
       // blocks of init1()
@@ -313,6 +312,40 @@ contract Danku {
       }
     }
     return true;
+  }
+
+  function rm_from_array(uint[] array, uint index) private pure returns(uint[] value) {
+    if (index >= array.length) return;
+    uint[] memory new_array = new uint[](array.length-1);
+    for (uint i = 0; i<new_array.length; i++){
+      if(i != index && i<index){
+        new_array[i] = array[i];
+      } else {
+        new_array[i] = array[i+1];
+      }
+    }
+    delete array;
+    return new_array;
+  }
+
+  function randomly_select_indexes(uint[] array) private returns (uint[]) {
+    uint train_index = 0;
+    uint test_index = 0;
+    uint block_i = 0;
+    // Randomly select training indexes
+    while(train_index < 13) {
+      uint random_index = uint(sha256(block.blockhash(block.number-block_i))) % array.length;
+      training_partition[train_index] = array[random_index];
+      array = rm_from_array(array, random_index);
+      block_i++;
+      train_index++;
+    }
+    // Also select testing indexes
+    for (uint i = 0; i < max_num_data_groups/partition_size; i++) {
+      if (not_in_train_partition(training_partition, array[i])) {
+        testing_partition[test_index] = array[i];
+      }
+    }
   }
 
   function set_data_indexes() public returns (bool) {
