@@ -53,9 +53,14 @@ def test_danku_init(web3, chain):
     init2_tx = danku.transact().init2(dgi)
     chain.wait.for_receipt(init2_tx)
 
-    # get sorted training partition
-    training_partition = danku.call().getTrainingPartition()
+    # Can only access one element of a public array at a time
+    training_partition = list(map(lambda x: danku.call().training_partition(x),\
+        range(scd.num_train_data_groups)))
+    testing_partition = list(map(lambda x: danku.call().testing_partition(x),\
+        range(scd.num_test_data_groups)))
+    # get sorted partitions
     training_partition = sorted(training_partition)
+    testing_partition = sorted(testing_partition)
     assert(False)
 
 def test_danku_model_submission():
