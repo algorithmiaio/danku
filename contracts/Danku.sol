@@ -256,7 +256,7 @@ contract Danku {
     // Make sure contract is not terminated
     assert(contract_terminated == false);
     // Make sure it's not the initialization stage anymore
-    assert(init_level == 3);
+    assert(init_level >= 2);
     return training_partition;
   }
 

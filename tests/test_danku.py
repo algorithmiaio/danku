@@ -53,9 +53,10 @@ def test_danku_init(web3, chain):
     init2_tx = danku.transact().init2(dgi)
     chain.wait.for_receipt(init2_tx)
 
-    # get training partition
-    # training_partition = danku.call().getTrainingPartition()
-    # print(training_partition)
+    # get sorted training partition
+    training_partition = danku.call().getTrainingPartition()
+    training_partition = sorted(training_partition)
+    assert(False)
 
 def test_danku_model_submission():
     assert(False)
