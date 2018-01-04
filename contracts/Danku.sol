@@ -336,6 +336,7 @@ contract Danku {
     for (uint i = 0; i < max_num_data_groups/partition_size; i++) {
       if (not_in_train_partition(training_partition, array[i])) {
         testing_partition[test_index] = array[i];
+        test_index += 1;
       }
     }
   }
