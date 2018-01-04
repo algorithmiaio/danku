@@ -113,7 +113,7 @@ contract Danku {
     // to minimize organizer influence on random index selection
     if (block.number <= init1_block_height+5) {
       // Select random training indexes
-      uint[] memory array;
+      uint[] memory array = new uint[](max_num_data_groups/partition_size);
       for (uint i = 0; i < max_num_data_groups/partition_size; i++) {
         array[i] = i;
       }
@@ -333,7 +333,7 @@ contract Danku {
     uint test_index = 0;
     uint block_i = 0;
     // Randomly select training indexes
-    while(train_index < 13) {
+    while(train_index < training_partition.length-1) {
       uint random_index = uint(sha256(block.blockhash(block.number-block_i))) % array.length;
       training_partition[train_index] = array[random_index];
       array = rm_from_array(array, random_index);
