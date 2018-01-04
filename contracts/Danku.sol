@@ -74,7 +74,7 @@ contract Danku {
   uint[training_data_group_size/partition_size] public training_partition;
   uint[testing_data_group_size/partition_size] public testing_partition;
   Submission[] submission_queue;
-  bool contract_terminated = false;
+  bool public contract_terminated = false;
 
   // Takes in array of hashed data points of the entire dataset,
   // submission and evaluation times
@@ -249,15 +249,6 @@ contract Danku {
       organizer.transfer(this.balance);
     }
     contract_terminated = true;
-  }
-
-  // Getter method for getting training partition indexes
-  function getTrainingPartition() public view returns (uint[training_data_group_size/partition_size]) {
-    // Make sure contract is not terminated
-    assert(contract_terminated == false);
-    // Make sure it's not the initialization stage anymore
-    assert(init_level >= 2);
-    return training_partition;
   }
 
   function model_accuracy(uint submission_index, int256[datapoint_size][] data) public constant returns (int256){
