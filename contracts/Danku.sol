@@ -104,7 +104,7 @@ contract Danku {
     model_accuracy_criteria = accuracy_criteria;
   }
 
-  function init2() external {
+  function init2(uint[] index_array) external {
     // Make sure contract is not terminated
     assert(contract_terminated == false);
     // Only allow calling it once, in order
@@ -112,12 +112,10 @@ contract Danku {
     // Make sure it's being called within 5 blocks on init1()
     // to minimize organizer influence on random index selection
     if (block.number <= init1_block_height+5) {
-      // Select random training indexes
-      uint[] memory array = new uint[](max_num_data_groups/partition_size);
-      for (uint i = 0; i < max_num_data_groups/partition_size; i++) {
-        array[i] = i;
-      }
-      randomly_select_indexes(array);
+      // Randomly select training indexes
+      randomly_select_train_index(index_array);
+      // Select testing indexes
+      select_test_index(index_array);
       init_level = 2;
     } else {
       // Cancel the contract if init2() hasn't been called within 5
@@ -328,9 +326,8 @@ contract Danku {
     return new_array;
   }
 
-  function randomly_select_indexes(uint[] array) private returns (uint[]) {
+  function randomly_select_train_index(uint[] array) private {
     uint train_index = 0;
-    uint test_index = 0;
     uint block_i = 0;
     // Randomly select training indexes
     while(train_index < training_partition.length-1) {
@@ -340,7 +337,11 @@ contract Danku {
       block_i++;
       train_index++;
     }
-    // Also select testing indexes
+  }
+
+  function select_test_index(uint[] array) private {
+    // This should be only called after randomly selecting the training indexes
+    uint test_index = 0;
     for (uint i = 0; i < max_num_data_groups/partition_size; i++) {
       if (not_in_train_partition(training_partition, array[i])) {
         testing_partition[test_index] = array[i];

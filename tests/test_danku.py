@@ -46,7 +46,11 @@ def test_danku_init(web3, chain):
     chain.wait.for_receipt(init1_tx)
 
     # Initialization step 2
-    init2_tx = danku.transact().init2()
+    # Get data group indexes
+    dgi = []
+    for i in range(scd.num_data_groups):
+        dgi.append(i)
+    init2_tx = danku.transact().init2(dgi)
     chain.wait.for_receipt(init2_tx)
 
     # get training partition
