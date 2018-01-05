@@ -112,10 +112,8 @@ contract Danku {
     // Make sure it's being called within 5 blocks on init1()
     // to minimize organizer influence on random index selection
     if (block.number <= init1_block_height+5) {
-      // Randomly select training indexes
-      randomly_select_train_index(index_array);
-      // Select testing indexes
-      select_test_index(index_array);
+      // Randomly select indexes
+      randomly_select_index(index_array);
       init_level = 2;
     } else {
       // Cancel the contract if init2() hasn't been called within 5
@@ -318,27 +316,22 @@ contract Danku {
     return new_array;
   }
 
-  function randomly_select_train_index(uint[] array) private {
-    uint train_index = 0;
+  function randomly_select_index(uint[] array) private {
+    uint t_index = 0;
     uint block_i = 0;
     // Randomly select training indexes
-    while(train_index < training_partition.length-1) {
+    while(t_index < training_partition.length-1) {
       uint random_index = uint(sha256(block.blockhash(block.number-block_i))) % array.length;
-      training_partition[train_index] = array[random_index];
+      training_partition[t_index] = array[random_index];
       array = rm_from_array(array, random_index);
       block_i++;
-      train_index++;
+      t_index++;
     }
-  }
-
-  function select_test_index(uint[] array) private {
-    // This should be only called after randomly selecting the training indexes
-    uint test_index = 0;
-    for (uint i = 0; i < max_num_data_groups/partition_size; i++) {
-      if (not_in_train_partition(training_partition, array[i])) {
-        testing_partition[test_index] = array[i];
-        test_index += 1;
-      }
+    t_index = 0;
+    while(t_index < testing_partition.length-1) {
+      testing_partition[t_index] = array[array.length-1];
+      array = rm_from_array(array, array.length-1);
+      t_index++;
     }
   }
 
