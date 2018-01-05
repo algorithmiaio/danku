@@ -113,7 +113,7 @@ contract Danku {
     assert(init_level == 1);
     // Make sure it's being called within 5 blocks on init1()
     // to minimize organizer influence on random index selection
-    if (block.number <= init1_block_height+5) {
+    if (block.number <= init1_block_height+5 && block.number > init1_block_height) {
       // TODO: Also make sure it's being called 1 block after init1()
       // Randomly select indexes
       randomly_select_index(index_array);
