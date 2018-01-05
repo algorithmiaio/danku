@@ -104,7 +104,7 @@ class Dataset(object):
         packed_data = []
         for item in data:
             for point in item:
-                packed_data.append(item)
+                packed_data.append(point)
         return packed_data
     def unpack_data(self, data):
         unpacked_data = []
