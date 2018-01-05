@@ -292,6 +292,14 @@ contract Danku {
     return accuracy;
   }
 
+  function get_train_data_length() public view returns(uint256) {
+    return train_data.length;
+  }
+
+  function get_test_data_length() public view returns(uint256) {
+    return test_data.length;
+  }
+
   function round_up_division(int256 dividend, int256 divisor) private pure returns(int256) {
     // A special trick since solidity normall rounds it down
     return (dividend + divisor -1) / divisor;
