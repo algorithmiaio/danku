@@ -71,10 +71,16 @@ class NeuralNetwork():
             self.tf_weights["out"] = tf.Variable(tf.random_normal([\
                 self.input_layer_number_neurons,\
                 self.output_layer_number_neurons]))
+            self.weights.append(\
+                [self.input_layer_number_neurons * [0]] *\
+                self.output_layer_number_neurons)
         else:
             self.tf_weights["out"] = tf.Variable(tf.random_normal([\
                 self.hidden_layer_number_neurons[-1],
                 self.output_layer_number_neurons]))
+            self.weights.append(\
+                [self.hidden_layer_number_neurons[-1] * [0]] *\
+                self.output_layer_number_neurons)
 
         # Initialize layers
         self.tf_layers = {}
@@ -151,7 +157,6 @@ class NeuralNetwork():
             # Save the weights
             for l_i in range(len(self.hidden_layer_number_neurons)):
                 for l_ni in range(len(self.weights[l_i])):
-                    pass
                     for pl_ni in range(len(self.weights[l_i][l_ni])):
                         self.weights[l_i][l_ni][pl_ni] = self.tf_weights["h" + str(l_i+1)][pl_ni][l_ni].eval()
                         # For last layer
