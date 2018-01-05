@@ -307,7 +307,7 @@ contract Danku {
     uint array_length = array.length;
     uint block_i = 0;
     // Randomly select training indexes
-    while(t_index < training_partition.length-1) {
+    while(t_index < training_partition.length) {
       uint random_index = uint(sha256(block.blockhash(block.number-block_i))) % array_length;
       training_partition[t_index] = array[random_index];
       array[random_index] = array[array_length-1];
@@ -316,7 +316,7 @@ contract Danku {
       t_index++;
     }
     t_index = 0;
-    while(t_index < testing_partition.length-1) {
+    while(t_index < testing_partition.length) {
       testing_partition[t_index] = array[array_length-1];
       array_length--;
       t_index++;
