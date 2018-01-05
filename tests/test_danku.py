@@ -1,5 +1,13 @@
 from dutils.dataset import SampleCircleDataset
 
+debug = True
+
+def debug_print(message):
+    if debug:
+        print(message)
+    else:
+        pass
+
 def test_python_solidity_hashing_compatability():
     # Make sure Python and solidity hashes the data groups in the same manner
     assert(False)
@@ -45,11 +53,17 @@ def test_danku_init(web3, chain):
         submission_t, evaluation_t, test_reveal_t)
     chain.wait.for_receipt(init1_tx)
 
+    debug_print("Hashed Hex data groups: " +
+        str(list(map(lambda x: x.hex(), scd.hashed_data_group))))
+
     # Initialization step 2
     # Get data group indexes
     dgi = []
     for i in range(scd.num_data_groups):
         dgi.append(i)
+
+    debug_print("Data group indexes: " + str(dgi))
+
     init2_tx = danku.transact().init2(dgi)
     chain.wait.for_receipt(init2_tx)
 
@@ -58,9 +72,23 @@ def test_danku_init(web3, chain):
         range(scd.num_train_data_groups)))
     testing_partition = list(map(lambda x: danku.call().testing_partition(x),\
         range(scd.num_test_data_groups)))
-    # get sorted partitions
-    training_partition = sorted(training_partition)
-    testing_partition = sorted(testing_partition)
+    # get partitions
+    debug_print("Training partition: " + str(training_partition))
+    debug_print("Testing partition: " + str(testing_partition))
+
+    scd.partition_dataset(training_partition, testing_partition)
+    # Initialization step 3
+    # Time to reveal the training dataset
+    training_nonces = []
+    training_data = []
+    for i in training_partition:
+        training_nonces.append(scd.nonce[i])
+    # Pack data into a 1-dimension array
+    train_data = scd.pack_data(scd.train_data)
+    debug_print("Train data: " + str(train_data))
+    debug_print("Train nonce: " + str(scd.train_nonce))
+    init3_tx = danku.transact().init3(train_data, scd.train_nonce)
+    chain.wait.for_receipt(init3_tx)
     assert(False)
 
 def test_danku_model_submission():
