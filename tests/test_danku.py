@@ -51,7 +51,7 @@ def test_danku_init(web3, chain):
     # Initialization step 1
     debug_print("Hashed data groups: " + str(scd.hashed_data_group))
     debug_print("Hashed Hex data groups: " +
-        str(list(map(lambda x: x.hex(), scd.hashed_data_group))))
+        str(list(map(lambda x: "0x" + x.hex(), scd.hashed_data_group))))
 
     init1_tx = danku.transact().init1(scd.hashed_data_group, accuracy_criteria,\
         submission_t, evaluation_t, test_reveal_t)
