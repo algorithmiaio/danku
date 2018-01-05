@@ -138,14 +138,16 @@ class NeuralNetwork():
 
             print("Training Finished!")
 
-            x_test_vector = list(map(lambda x: list(x[:self.input_layer_number_neurons]),\
-                self.test_data))
-            y_test_vector = list(map(lambda x: list(x[self.input_layer_number_neurons:]),\
-                self.test_data))
-            # Get accuracy with test dataset
-            print("Testing Accuracy:", \
-                sess.run(self.accuracy,\
-                    feed_dict={self.x_vector: x_test_vector, self.y_vector: y_test_vector}))
+            if (len(self.test_data) != 0):
+                # Only get testing accuracy if both are provided before training
+                x_test_vector = list(map(lambda x: list(x[:self.input_layer_number_neurons]),\
+                    self.test_data))
+                y_test_vector = list(map(lambda x: list(x[self.input_layer_number_neurons:]),\
+                    self.test_data))
+                # Get accuracy with test dataset
+                print("Testing Accuracy:", \
+                    sess.run(self.accuracy,\
+                        feed_dict={self.x_vector: x_test_vector, self.y_vector: y_test_vector}))
 
             print("Saving weights...")
             # Save the weights
@@ -162,6 +164,21 @@ class NeuralNetwork():
                             self.weights[l_i][l_ni][pl_ni] = self.tf_weights["h" + str(l_i+1)][pl_ni][l_ni].eval()
             print("Weights saved!")
 
+    def test(self):
+        with tf.Session() as sess:
+            sess.run(self.tf_init)
+            if (len(self.test_data) != 0):
+                # Only get testing accuracy if both are provided before training
+                x_test_vector = list(map(lambda x: list(x[:self.input_layer_number_neurons]),\
+                    self.test_data))
+                y_test_vector = list(map(lambda x: list(x[self.input_layer_number_neurons:]),\
+                    self.test_data))
+                # Get accuracy with test dataset
+                print("Testing Accuracy:", \
+                    sess.run(self.accuracy,\
+                        feed_dict={self.x_vector: x_test_vector, self.y_vector: y_test_vector}))
+            else:
+                raise Exception("Please provide testing data before running the test method.")
     def load_train_data(self, train_data):
         # Validate dataset dimensions
         for data_point in train_data:
