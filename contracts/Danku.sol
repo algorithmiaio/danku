@@ -73,6 +73,8 @@ contract Danku {
   // Testing partition size is 6 (30%)
   uint[training_data_group_size/partition_size] public training_partition;
   uint[testing_data_group_size/partition_size] public testing_partition;
+  uint256 train_dg_revealed = 0;
+  uint256 test_dg_revealed = 0;
   Submission[] submission_queue;
   bool public contract_terminated = false;
 
@@ -112,6 +114,7 @@ contract Danku {
     // Make sure it's being called within 5 blocks on init1()
     // to minimize organizer influence on random index selection
     if (block.number <= init1_block_height+5) {
+      // TODO: Also make sure it's being called 1 block after init1()
       // Randomly select indexes
       randomly_select_index(index_array);
       init_level = 2;
@@ -122,25 +125,26 @@ contract Danku {
     }
   }
 
-  function init3(int256[] _train_data_groups, int256[] _train_data_group_nonces) external {
+  function init3(int256[] _train_data_groups, int256 _train_data_group_nonces) external {
+    // Pass a single data group at a time
     // Make sure contract is not terminated
     assert(contract_terminated == false);
     // Only allow calling once, in order
     assert(init_level == 2);
     // Verify data group and nonce lengths
-    assert((_train_data_groups.length/partition_size)/datapoint_size ==
-      training_partition.length);
-    assert(_train_data_group_nonces.length == training_data_group_size/partition_size);
+    assert((_train_data_groups.length/partition_size)/datapoint_size == 1);
     // Verify data group hashes
-    for (uint i = 0; i < training_partition.length; i++) {
-      // Order of revealed training data group must be the same with training partitions
-      // 3rd parameter is true since we're sending training data
-      assert(sha_data_group(_train_data_groups, _train_data_group_nonces[i], i) == hashed_data_groups[training_partition[i]]);
-    }
-    // Assign training data
+    // Order of revealed training data group must be the same with training partitions
+    // Otherwise hash verification will fail
+    assert(sha_data_group(_train_data_groups, _train_data_group_nonces) ==
+      hashed_data_groups[training_partition[train_dg_revealed]]);
+    train_dg_revealed += 1;
+    // Assign training data after verifying the corresponding hash
     unpack_data_groups(_train_data_groups, true);
-    init_level = 3;
-    init3_block_height = block.number;
+    if (train_dg_revealed == (training_data_group_size/partition_size)) {
+      init_level = 3;
+      init3_block_height = block.number;
+    }
   }
 
   function submit_model(
@@ -188,7 +192,7 @@ contract Danku {
     assert(_test_data_group_nonces.length == max_num_data_groups / partition_size - training_partition.length);
     // Verify data group hashes
     for (uint i = 0; i < _test_data_groups.length; i++) {
-      assert(sha_data_group(_test_data_groups, _test_data_group_nonces[i], i) == hashed_data_groups[testing_partition[i]]);
+      assert(sha_data_group(_test_data_groups, _test_data_group_nonces[i]) == hashed_data_groups[testing_partition[i]]);
     }
     // Assign testing data
     unpack_data_groups(_test_data_groups, false);
@@ -351,39 +355,39 @@ contract Danku {
     return ns_total == wa_total;
   }
 
-  /*function unpack_train_data_groups(int256[datapoint_size][][] _data_groups) private {*/
     function unpack_data_groups(int256[] _data_groups, bool is_train_data) private {
-    int256[datapoint_size][] memory merged_data_group;
-    uint index_tracker = 0;
-    int256[datapoint_size] memory temp_data_point;
+    int256[datapoint_size][] memory merged_data_group = new int256[datapoint_size][](_data_groups.length/datapoint_size);
 
     for (uint i = 0; i < _data_groups.length/datapoint_size; i++) {
       for (uint j = 0; j < datapoint_size; j++) {
-        temp_data_point[j] = _data_groups[i*datapoint_size + j];
+        merged_data_group[i][j] = _data_groups[i*datapoint_size + j];
       }
-      merged_data_group[index_tracker] = temp_data_point;
-      index_tracker += 1;
     }
     if (is_train_data == true) {
       // Assign training data
-      train_data = merged_data_group;
+      for (uint k = 0; k < merged_data_group.length; k++) {
+        train_data.push(merged_data_group[k]);
+      }
     } else {
+      for (uint l = 0; l < merged_data_group.length; l++) {
+        test_data.push(merged_data_group[l]);
+      }
       // Assign testing data
       test_data = merged_data_group;
     }
   }
 
-    function sha_data_group(int256[] data_group, int256 data_group_nonce, uint256 data_group_index) private pure returns (bytes32) {
+    function sha_data_group(int256[] data_group, int256 data_group_nonce) private pure returns (bytes32) {
       // Extract the relevant data points for the given data group index
       // We concat all data groups and add the nounce to the end of the array
       // and get the sha256 for the array
       uint index_tracker = 0;
       uint256 total_size = datapoint_size * partition_size;
-      uint256 start_index = data_group_index * total_size;
-      uint256 iter_limit = start_index + total_size;
+      /* uint256 start_index = data_group_index * total_size;
+      uint256 iter_limit = start_index + total_size; */
       int256[] memory all_data_points = new int256[](total_size+1);
 
-      for (uint256 i = start_index; i < iter_limit; i++) {
+      for (uint256 i = 0; i < total_size; i++) {
         all_data_points[index_tracker] = data_group[i];
         index_tracker += 1;
       }
