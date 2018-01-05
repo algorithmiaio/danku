@@ -109,6 +109,15 @@ def test_danku_init(web3, chain):
 
     init3_block_number = web3.eth.blockNumber
     dbg.dprint("Init3 block: " + str(init3_block_number))
+
+    # Get the training data from the contract
+    contract_train_data_length = danku.call().get_train_data_length()
+    contract_train_data = []
+    for i in range(contract_train_data_length):
+        for j in range(scd.dps):
+            contract_train_data.append(danku.call().train_data(i,j))
+    contract_train_data = scd.unpack_data(contract_train_data)
+    dbg.dprint("Contract training data: " + str(contract_train_data))
     assert(False)
 
 def test_danku_model_submission():
