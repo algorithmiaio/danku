@@ -132,7 +132,7 @@ contract Danku {
       training_partition.length);
     assert(_train_data_group_nonces.length == training_data_group_size/partition_size);
     // Verify data group hashes
-    for (uint i = 0; i < _train_data_group_nonces.length; i++) {
+    for (uint i = 0; i < training_partition.length; i++) {
       // Order of revealed training data group must be the same with training partitions
       // 3rd parameter is true since we're sending training data
       assert(sha_data_group(_train_data_groups, _train_data_group_nonces[i], i) == hashed_data_groups[training_partition[i]]);
@@ -377,11 +377,11 @@ contract Danku {
       // Extract the relevant data points for the given data group index
       // We concat all data groups and add the nounce to the end of the array
       // and get the sha256 for the array
-      int256[] memory all_data_points;
       uint index_tracker = 0;
       uint256 total_size = datapoint_size * partition_size;
       uint256 start_index = data_group_index * total_size;
       uint256 iter_limit = start_index + total_size;
+      int256[] memory all_data_points = new int256[](total_size+1);
 
       for (uint256 i = start_index; i < iter_limit; i++) {
         all_data_points[index_tracker] = data_group[i];
