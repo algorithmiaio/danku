@@ -162,7 +162,20 @@ class NeuralNetwork():
                             self.weights[l_i][l_ni][pl_ni] = self.tf_weights["h" + str(l_i+1)][pl_ni][l_ni].eval()
             print("Weights saved!")
 
+    def load_train_data(self, train_data):
+        # Validate dataset dimensions
+        for data_point in train_data:
+            assert(len(data_point) == self.data_point_size)
+        self.train_data = train_data
+
+    def load_test_data(self, test_data):
+        # Validate dataset dimensions
+        for data_point in test_data:
+            assert(len(data_point) == self.data_point_size)
+        self.test_data = test_data
+
     def load_dataset(self, dataset_obj):
+        # Load training and testing data from dataset object
         # Validate dataset dimensions
         for data_point in dataset_obj.train_data:
                 assert(len(data_point) == self.data_point_size)
