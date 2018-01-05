@@ -117,7 +117,7 @@ class Dataset(object):
         for i in total_iter:
             start = i * self.dps
             end = start + self.dps
-            unpacked_data.append(data[start:end])
+            unpacked_data.append(tuple(data[start:end]))
         return unpacked_data
 
 class SampleCircleDataset(Dataset):
