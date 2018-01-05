@@ -82,11 +82,19 @@ def test_danku_init(web3, chain):
     for i in training_partition:
         training_nonces.append(scd.nonce[i])
     # Pack data into a 1-dimension array
+    # Since the data array is too large, we're going to send them in single data group chunks
     train_data = scd.pack_data(scd.train_data)
-    dbg.dprint("Train data: " + str(train_data))
-    dbg.dprint("Train nonce: " + str(scd.train_nonce))
-    init3_tx = danku.transact().init3(train_data, scd.train_nonce)
-    chain.wait.for_receipt(init3_tx)
+    test_data = scd.pack_data(scd.test_data)
+    for i in range(len(training_partition)):
+        start = i*scd.dps*scd.partition_size
+        end = start + scd.dps*scd.partition_size
+        dbg.dprint("(" + str(training_partition[i]) + ") Train data,nonce: " + str(train_data[start:end]) + "," + str(scd.train_nonce[i]))
+        init3_tx = danku.transact().init3(train_data[start:end], scd.train_nonce[i])
+        chain.wait.for_receipt(init3_tx)
+    for i in range(len(testing_partition)):
+        start = i*scd.dps*scd.partition_size
+        end = start + scd.dps*scd.partition_size
+        dbg.dprint("(" + str(testing_partition[i]) + ") Test data,nonce: " + str(test_data[start:end]) + "," + str(scd.test_nonce[i]))
     assert(False)
 
 def test_danku_model_submission():
