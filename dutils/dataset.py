@@ -5,6 +5,7 @@ import random
 from secrets import choice, randbelow
 from random import shuffle
 from hashlib import sha256
+import dutils.debug as dbg
 
 class Dataset(object):
     def __init__(self, max_num_data_groups=100, training_percentage=0.7,\
@@ -42,10 +43,14 @@ class Dataset(object):
     def sha_data_group(self, data_group, nonce):
         # TODO: Also check if sha3_256() keccak version works
         serialized_dg = b""
+        l = []
         for data_point in data_group:
             for number in data_point:
+                l.append(number)
                 serialized_dg += number.to_bytes(32, signed=True, byteorder="big")
         serialized_dg += nonce.to_bytes(32, signed=True, byteorder="big")
+        l.append(nonce)
+        dbg.dprint("Hashed data group: " + str(l))
         return sha256(serialized_dg).digest()
 
     def sha_all_data_groups(self):
