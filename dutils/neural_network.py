@@ -1,6 +1,7 @@
 # A simple linear neural network implementation in Tensorflow
 # Trained on the sample datasets
 import tensorflow as tf
+import dutils.debug as dbg
 
 class NeuralNetwork():
     def __init__(self, il_nn, hl_nn, ol_nn, lr=0.1, ns=100, bs=10, ds=10):
@@ -98,7 +99,6 @@ class NeuralNetwork():
                 self.tf_weights["out"])
         # Construct model
         logits = self.tf_layers["out"]
-        print(logits)
         prediction = tf.nn.relu(logits)
 
         # Loss and optimizer
@@ -123,8 +123,6 @@ class NeuralNetwork():
                     self.train_data))
                 y_train_vector = list(map(lambda x: list(x[self.input_layer_number_neurons:]),\
                     self.train_data))
-                print(x_train_vector)
-                print(y_train_vector)
                 # Backpropogation
                 sess.run(self.train_op,
                     feed_dict={self.x_vector: x_train_vector, self.y_vector: y_train_vector})
@@ -132,11 +130,11 @@ class NeuralNetwork():
                     # Calculate loss and accuracy
                     loss, acc = sess.run([self.loss_op, self.accuracy],\
                         feed_dict={self.x_vector: x_train_vector, self.y_vector: y_train_vector})
-                    print("Step " + str(step) + ", Loss= " + \
+                    dbg.dprint("Step " + str(step) + ", Loss= " + \
                           "{:.4f}".format(loss) + ", Training Accuracy= " + \
                           "{:.3f}".format(acc))
 
-            print("Training Finished!")
+            dbg.dprint("Training Finished!")
 
             if (len(self.test_data) != 0):
                 # Only get testing accuracy if both are provided before training
@@ -145,11 +143,11 @@ class NeuralNetwork():
                 y_test_vector = list(map(lambda x: list(x[self.input_layer_number_neurons:]),\
                     self.test_data))
                 # Get accuracy with test dataset
-                print("Testing Accuracy:", \
+                dbg.dprint("Testing Accuracy:", \
                     sess.run(self.accuracy,\
                         feed_dict={self.x_vector: x_test_vector, self.y_vector: y_test_vector}))
 
-            print("Saving weights...")
+            dbg.dprint("Saving weights...")
             # Save the weights
             for l_i in range(len(self.hidden_layer_number_neurons)):
                 for l_ni in range(len(self.weights[l_i])):
@@ -162,7 +160,7 @@ class NeuralNetwork():
                         # For hidden layers
                         else:
                             self.weights[l_i][l_ni][pl_ni] = self.tf_weights["h" + str(l_i+1)][pl_ni][l_ni].eval()
-            print("Weights saved!")
+            dbg.dprint("Weights saved!")
 
     def test(self):
         with tf.Session() as sess:
@@ -174,7 +172,7 @@ class NeuralNetwork():
                 y_test_vector = list(map(lambda x: list(x[self.input_layer_number_neurons:]),\
                     self.test_data))
                 # Get accuracy with test dataset
-                print("Testing Accuracy:", \
+                dbg.dprint("Testing Accuracy:", \
                     sess.run(self.accuracy,\
                         feed_dict={self.x_vector: x_test_vector, self.y_vector: y_test_vector}))
             else:
