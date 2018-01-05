@@ -342,48 +342,6 @@ contract Danku {
     }
   }
 
-  function set_data_indexes() public returns (bool) {
-    uint[training_data_group_size/partition_size] memory training_index;
-    uint[testing_data_group_size/partition_size] memory testing_index;
-    uint index_counter = 0;
-    // We can try up to 32x256=8192 times before giving up
-    // If we don't get it (very unlikely), we'll return false
-    for (uint i = 0; i < 256; i++) {
-      // Try up to last 256 blocks
-      for (uint j = 0; j < 32; j++) {
-        // If we have enough random indexes, exit inner loop
-        if (training_index.length == training_data_group_size/partition_size) {
-            break;
-        }
-        // Get a number between 0 and dg_size-1
-        uint random_number = uint(keccak256(block.blockhash(block.number-i)[j])) % max_num_data_groups/partition_size;
-        // If number has not been selected yet, add it to our training index array
-        if (not_in_train_partition(training_index, random_number)) {
-            training_index[index_counter] = random_number;
-            index_counter += 1;
-        }
-      }
-      // If we have enough random indexes, exit outer loop
-      if (training_index.length == training_data_group_size/partition_size) {
-        break;
-      }
-    }
-    // Check if we have enough training indexes
-    if (training_index.length == training_data_group_size/partition_size) {
-      // Only set the training partition if random selection is successful
-      training_partition = training_index;
-      // Also set the remaining indexes to the testing partition
-      for (uint k = 0; k < max_num_data_groups/partition_size; k++) {
-        if (not_in_train_partition(training_index, k)) {
-          testing_index[testing_index.length] = k;
-        }
-      }
-      return true;
-    } else {
-      return false;
-    }
-  }
-
   function valid_weights(int[] weights, uint num_neurons_input_layer, uint num_neurons_output_layer, uint[] num_neurons_hidden_layer) private pure returns (bool) {
     // make sure the number of weights match the network structure
     // get number of weights based on network structure
