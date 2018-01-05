@@ -1,2 +1,2 @@
 # Configurations go here
-DEBUG == False
+DEBUG = False
