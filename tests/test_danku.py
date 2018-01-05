@@ -48,6 +48,10 @@ def test_danku_init(web3, chain):
     scd = SampleCircleDataset()
     scd.generate_nonce()
     scd.sha_all_data_groups()
+
+    debug_print("All data groups: " + str(scd.data))
+    debug_print("All nonces: " + str(scd.nonce))
+
     # Initialization step 1
     debug_print("Hashed data groups: " + str(scd.hashed_data_group))
     debug_print("Hashed Hex data groups: " +
