@@ -50,7 +50,7 @@ class Dataset(object):
 
     def sha_all_data_groups(self):
         assert(len(self.data)/self.partition_size == len(self.nonce))
-        for i in range(len(self.nonce)):
+        for i in range(self.num_data_groups):
             start = i * self.partition_size
             end = start + self.partition_size
             dg_hash = self.sha_data_group(self.data[start:end], self.nonce[i])
