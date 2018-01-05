@@ -1,12 +1,5 @@
 from dutils.dataset import SampleCircleDataset
-
-debug = True
-
-def debug_print(message):
-    if debug:
-        print(message)
-    else:
-        pass
+import dutils.debug as dbg
 
 def test_python_solidity_hashing_compatability():
     # Make sure Python and solidity hashes the data groups in the same manner
@@ -49,12 +42,12 @@ def test_danku_init(web3, chain):
     scd.generate_nonce()
     scd.sha_all_data_groups()
 
-    debug_print("All data groups: " + str(scd.data))
-    debug_print("All nonces: " + str(scd.nonce))
+    dbg.dprint("All data groups: " + str(scd.data))
+    dbg.dprint("All nonces: " + str(scd.nonce))
 
     # Initialization step 1
-    debug_print("Hashed data groups: " + str(scd.hashed_data_group))
-    debug_print("Hashed Hex data groups: " +
+    dbg.dprint("Hashed data groups: " + str(scd.hashed_data_group))
+    dbg.dprint("Hashed Hex data groups: " +
         str(list(map(lambda x: "0x" + x.hex(), scd.hashed_data_group))))
 
     init1_tx = danku.transact().init1(scd.hashed_data_group, accuracy_criteria,\
@@ -67,7 +60,7 @@ def test_danku_init(web3, chain):
     for i in range(scd.num_data_groups):
         dgi.append(i)
 
-    debug_print("Data group indexes: " + str(dgi))
+    dbg.dprint("Data group indexes: " + str(dgi))
 
     init2_tx = danku.transact().init2(dgi)
     chain.wait.for_receipt(init2_tx)
@@ -78,8 +71,8 @@ def test_danku_init(web3, chain):
     testing_partition = list(map(lambda x: danku.call().testing_partition(x),\
         range(scd.num_test_data_groups)))
     # get partitions
-    debug_print("Training partition: " + str(training_partition))
-    debug_print("Testing partition: " + str(testing_partition))
+    dbg.dprint("Training partition: " + str(training_partition))
+    dbg.dprint("Testing partition: " + str(testing_partition))
 
     scd.partition_dataset(training_partition, testing_partition)
     # Initialization step 3
@@ -90,8 +83,8 @@ def test_danku_init(web3, chain):
         training_nonces.append(scd.nonce[i])
     # Pack data into a 1-dimension array
     train_data = scd.pack_data(scd.train_data)
-    debug_print("Train data: " + str(train_data))
-    debug_print("Train nonce: " + str(scd.train_nonce))
+    dbg.dprint("Train data: " + str(train_data))
+    dbg.dprint("Train nonce: " + str(scd.train_nonce))
     init3_tx = danku.transact().init3(train_data, scd.train_nonce)
     chain.wait.for_receipt(init3_tx)
     assert(False)
