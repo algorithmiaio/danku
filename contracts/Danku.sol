@@ -130,8 +130,9 @@ contract Danku {
     // Only allow calling once, in order
     assert(init_level == 2);
     // Verify data group and nonce lengths
-    assert(_train_data_groups.length == training_partition.length);
-    assert(_train_data_group_nonces.length == training_partition.length);
+    assert((_train_data_groups.length/partition_size)/datapoint_size ==
+      training_partition.length);
+    assert(_train_data_group_nonces.length == training_data_group_size/partition_size);
     // Verify data group hashes
     for (uint i = 0; i < _train_data_group_nonces.length; i++) {
       // Order of revealed training data group must be the same with training partitions
