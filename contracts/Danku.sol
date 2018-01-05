@@ -302,35 +302,23 @@ contract Danku {
     return true;
   }
 
-  function rm_from_array(uint[] array, uint index) private pure returns(uint[] value) {
-    if (index >= array.length) return;
-    uint[] memory new_array = new uint[](array.length-1);
-    for (uint i = 0; i<new_array.length; i++){
-      if(i != index && i<index){
-        new_array[i] = array[i];
-      } else {
-        new_array[i] = array[i+1];
-      }
-    }
-    delete array;
-    return new_array;
-  }
-
   function randomly_select_index(uint[] array) private {
     uint t_index = 0;
+    uint array_length = array.length;
     uint block_i = 0;
     // Randomly select training indexes
     while(t_index < training_partition.length-1) {
-      uint random_index = uint(sha256(block.blockhash(block.number-block_i))) % array.length;
+      uint random_index = uint(sha256(block.blockhash(block.number-block_i))) % array_length;
       training_partition[t_index] = array[random_index];
-      array = rm_from_array(array, random_index);
+      array[random_index] = array[array_length-1];
+      array_length--;
       block_i++;
       t_index++;
     }
     t_index = 0;
     while(t_index < testing_partition.length-1) {
-      testing_partition[t_index] = array[array.length-1];
-      array = rm_from_array(array, array.length-1);
+      testing_partition[t_index] = array[array_length-1];
+      array_length--;
       t_index++;
     }
   }
