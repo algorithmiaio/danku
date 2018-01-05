@@ -135,7 +135,7 @@ contract Danku {
     for (uint i = 0; i < training_partition.length; i++) {
       // Order of revealed training data group must be the same with training partitions
       // 3rd parameter is true since we're sending training data
-      assert(sha_data_group(_train_data_groups, _train_data_group_nonces[i], training_partition[i]) == hashed_data_groups[training_partition[i]]);
+      assert(sha_data_group(_train_data_groups, _train_data_group_nonces[i], i) == hashed_data_groups[training_partition[i]]);
     }
     // Assign training data
     unpack_data_groups(_train_data_groups, true);
