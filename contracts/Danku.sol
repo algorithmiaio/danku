@@ -57,8 +57,8 @@ contract Danku {
   uint[max_num_data_groups/partition_size] data_group_nonces;
   // + 1 for prediction
   // A data group has 3 data points in total
-  int256[datapoint_size][] train_data;
-  int256[datapoint_size][] test_data;
+  int256[datapoint_size][] public train_data;
+  int256[datapoint_size][] public test_data;
   bytes32 partition_seed;
   // Deadline for submitting solutions in terms of block size
   uint public submission_stage_block_size;
