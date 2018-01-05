@@ -60,10 +60,10 @@ class Dataset(object):
         # Partition the dataset
         for t_index in training_partition:
             for i in range(self.partition_size):
-                self.train_data.append(self.data[t_index+i])
+                self.train_data.append(self.data[self.partition_size*t_index + i])
         for t_index in testing_partition:
             for i in range(self.partition_size):
-                self.test_data.append(self.data[t_index+i])
+                self.test_data.append(self.data[self.partition_size*t_index + i])
         # Partition the nonces
         for t_index in training_partition:
             self.train_nonce.append(self.nonce[t_index])
