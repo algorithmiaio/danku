@@ -122,7 +122,7 @@ contract Danku {
     }
   }
 
-    function init3(int256[] _train_data_groups, int256[] _train_data_group_nonces) external {
+  function init3(int256[] _train_data_groups, int256[] _train_data_group_nonces) external {
     // Make sure contract is not terminated
     assert(contract_terminated == false);
     // Only allow calling once, in order
