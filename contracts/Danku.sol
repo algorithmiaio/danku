@@ -450,9 +450,8 @@ contract Danku {
       }
       // Add nonce to the whole array
       all_data_points[index_tracker] = data_group_nonce;
-      index_tracker += 1;
       // Return sha256 on all data points + nonce
-      return keccak256(all_data_points);
+      return sha256(all_data_points);
     }
 
   function relu_activation(int256 x) private pure returns (int256) {
