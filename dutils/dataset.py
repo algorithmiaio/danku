@@ -15,8 +15,8 @@ class Dataset(object):
         self.training_percentage = training_percentage
         self.training_data_group_size = int(training_percentage *\
             self.max_num_data_groups)
-        self.testing_data_group_size = self.max_num_data_groups -\
-            self.training_data_group_size
+        self.testing_data_group_size = int((1-training_percentage) *\
+            self.max_num_data_groups)
         self.num_data_groups = int(self.max_num_data_groups /\
             self.partition_size)
         self.num_train_data_groups = int(self.training_data_group_size/\
@@ -139,7 +139,8 @@ class SampleCircleDataset(Dataset):
     _________________________  (-)
 (-) 6 5 4 3 2 1 0 1 2 3 4 5 6 (+)
     '''
-    def __init__(self):
+    def __init__(self, max_num_data_groups=100, training_percentage=0.7,\
+        partition_size=5):
         data = [(0,6,1),(-1,5,1),(0,5,1),(1,5,1),(-2,4,1),(-1,4,1),(1,4,1),
         (2,4,1),(-3,3,1),(-2,3,1),(2,3,1),(3,3,1),(-4,2,1),(-3,2,1),(3,2,1),
         (4,2,1),(-6,0,1),(-5,0,1),(5,0,1),(6,0,1),(-5,-1,1),(-4,-1,1),(4,-1,1),
@@ -155,7 +156,8 @@ class SampleCircleDataset(Dataset):
         (-5,-6,0),(-4,-6,0),(4,-6,0),(5,-6,0),(5,-6,0),(6,-6,0),(6,-5,0),
         (6,-4,0),(6,-3,0)]
         max_num_data_groups = len(data)
-        super().__init__(max_num_data_groups=max_num_data_groups)
+        super().__init__(max_num_data_groups=max_num_data_groups, training_percentage=training_percentage,\
+        partition_size=partition_size)
         self.data = data
         self.shuffle()
         self.dps = 3
@@ -179,7 +181,8 @@ class SampleSwirlDataset(Dataset):
     _________________________  (-)
 (-) 6 5 4 3 2 1 0 1 2 3 4 5 6 (+)
     '''
-    def __init__(self):
+    def __init__(self, max_num_data_groups=100, training_percentage=0.7,\
+        partition_size=5):
         data = [(-5,6,0),(-4,6,0),(-3,6,0),(-2,6,0),(-1,6,0),(0,6,0),
         (1,6,0),(2,6,0),(3,6,0),(-5,5,0),(-5,4,0),(-5,3,0),(-5,2,0),(-5,1,0),
         (-5,0,0),(-5,-1,0),(-5,-2,0),(-5,-3,0),(-5,-4,0),(-4,-4,0),(-3,-4,0),
@@ -192,7 +195,8 @@ class SampleSwirlDataset(Dataset):
         (5,2,1),(5,1,1),(5,0,1),(5,-1,1),(5,-2,1),(5,-3,1),(5,-4,1),(5,-5,1),
         (5,-6,1),(4,-6,1),(3,-6,1),(2,-6,1),(1,-6,1),(0,-6,1)]
         max_num_data_groups = len(data)
-        super().__init__(max_num_data_groups=max_num_data_groups)
+        super().__init__(max_num_data_groups=max_num_data_groups, training_percentage=training_percentage,\
+        partition_size=partition_size)
         self.data = data
         self.shuffle()
         self.dps = 3
@@ -200,31 +204,34 @@ class SampleSwirlDataset(Dataset):
 class SampleHalfDividedDataset(Dataset):
     '''
                                (+)
-    1 - - 1 - 1 - - 1 - - - - | 6
-    - 1 - - - - - 1 - - - - - | 5
+    1 1 1 1 1 1 1 - 1 - - - - | 6
+    - 1 - 1 - - - 1 - - - - - | 5
     1 - 1 - 1 - 1 - - - - - 0 | 4
     - 1 - - 1 - - - - - - 0 - | 3
     1 - 1 1 - - - - - 0 - - 0 | 2
-    - - - - - - - - - 0 - - - | 1
-    1 1 - - - - - - - - 0 - - | 0
+    - 1 - - - - - - - 0 - - - | 1
+    1 1 - 1 - - - - - - 0 - - | 0
     1 - - - - - - - 0 0 - - 0 | 1
-    - - - - - - - - - - 0 - - | 2
-    - - - - - - - - 0 0 - - 0 | 3
+    1 1 - - - - - - - - 0 - - | 2
+    1 - - - - - - - 0 0 - - 0 | 3
     - - - - - - 0 0 - - 0 - - | 4
     - - - - - 0 - - - 0 - 0 - | 5
     - - - - - - 0 - 0 - - - 0 | 6
     _________________________  (-)
 (-) 6 5 4 3 2 1 0 1 2 3 4 5 6 (+)
     '''
-    def __init__(self):
+    def __init__(self, max_num_data_groups=100, training_percentage=0.7,\
+        partition_size=5):
         data = [(-3,6,1),(-1,6,1),(-5,5,1),(1,5,1),(-6,4,1),(-4,4,1),
         (-2,4,1),(0,4,1),(-5,3,1),(-2,3,1),(-6,2,1),(-4,2,1),(-3,2,1),(-5,0,1),
         (6,4,0),(5,3,0),(3,2,0),(6,2,0),(3,1,0),(4,0,0),(2,-1,0),(3,-1,0),
         (6,-1,0),(4,-2,0),(2,-3,0),(3,-3,0),(6,-3,0),(0,-4,0),(1,-4,0),(4,-4,0),
         (-1,-5,0),(3,-5,0),(5,-5,0),(0,-6,0),(6,-6,0),(-6,6,1),(-6,0,1),
-        (-6,-1,1),(2,6,1),(2,-6,0)]
+        (-6,-1,1),(2,6,1),(2,-6,0),(-5,6,1),(-4,6,1),(-2,6,1),(0,6,1),(-5,1,1),
+        (-1,-2,1),(-3,5,1),(-3,0,1),(-5,-2,1),(-6,-3,1)]
         max_num_data_groups = len(data)
-        super().__init__(max_num_data_groups=max_num_data_groups)
+        super().__init__(max_num_data_groups=max_num_data_groups, training_percentage=training_percentage,\
+        partition_size=partition_size)
         self.data = data
         self.shuffle()
         self.dps = 3
@@ -248,7 +255,8 @@ class SampleAcrossCornerDataset(Dataset):
     _________________________  (-)
 (-) 6 5 4 3 2 1 0 1 2 3 4 5 6 (+)
     '''
-    def __init__(self):
+    def __init__(self, max_num_data_groups=100, training_percentage=0.7,\
+        partition_size=5):
         data = [(-6,6,0),(-5,6,0),(-4,6,0),(-6,5,0),(-5,5,0),(-4,5,0),
         (-3,5,0),(-6,4,0),(-5,4,0),(-4,4,0),(-3,4,0),(-5,3,0),(-4,3,0),(-3,3,0),
         (-2,2,0),(-1,1,0),(1,-1,0),(2,-2,0),(3,-3,0),(4,-3,0),(5,-3,0),(3,-4,0),
@@ -256,7 +264,8 @@ class SampleAcrossCornerDataset(Dataset):
         (5,-6,0),(6,-6,0),(-2,3,0),(-3,2,0),(3,-2,0),(2,-3,0),(2,3,1),(3,2,1),
         (-3-2,1),(-2,-3,1)]
         max_num_data_groups = len(data)
-        super().__init__(max_num_data_groups=max_num_data_groups)
+        super().__init__(max_num_data_groups=max_num_data_groups, training_percentage=training_percentage,\
+        partition_size=partition_size)
         self.data = data
         self.shuffle()
         self.dps = 3
