@@ -1,4 +1,4 @@
-from dutils.dataset import SampleCircleDataset
+from dutils.dataset import SampleHalfDividedDataset
 import dutils.debug as dbg
 from secrets import randbelow
 
@@ -39,7 +39,7 @@ def test_danku_init(web3, chain):
     # Deduct reward amount (1 ETH) and gas cost (21040 wei)
     assert bal == 999998999999999999978960
 
-    scd = SampleCircleDataset()
+    scd = SampleHalfDividedDataset(training_percentage=0.8, max_num_data_groups=50)
     scd.generate_nonce()
     scd.sha_all_data_groups()
 
