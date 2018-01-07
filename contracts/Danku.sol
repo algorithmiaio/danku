@@ -44,9 +44,9 @@ contract Danku {
   uint constant prediction_size = 1;
   // Max number of data groups
   // Change this to your data group size
-  uint8 constant max_num_data_groups = 100;
+  uint8 constant max_num_data_groups = 50;
   // Training partition size
-  uint8 constant training_data_group_size = 70;
+  uint8 constant training_data_group_size = 40;
   // Testing partition size
   uint8 constant testing_data_group_size = max_num_data_groups - training_data_group_size;
   // Dataset is divided into data groups.
