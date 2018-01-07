@@ -149,9 +149,9 @@ class NeuralNetwork():
                 y_test_vector = list(map(lambda x: list(x[self.input_layer_number_neurons:]),\
                     self.test_data))
                 # Get accuracy with test dataset
-                dbg.dprint("Testing Accuracy:", \
-                    sess.run(self.accuracy,\
-                        feed_dict={self.x_vector: x_test_vector, self.y_vector: y_test_vector}))
+                dbg.dprint("Testing Accuracy:" +\
+                    str(sess.run(self.accuracy,\
+                        feed_dict={self.x_vector: x_test_vector, self.y_vector: y_test_vector})))
 
             dbg.dprint("Saving weights...")
             # Save the weights
@@ -177,9 +177,9 @@ class NeuralNetwork():
                 y_test_vector = list(map(lambda x: list(x[self.input_layer_number_neurons:]),\
                     self.test_data))
                 # Get accuracy with test dataset
-                dbg.dprint("Testing Accuracy:", \
-                    sess.run(self.accuracy,\
-                        feed_dict={self.x_vector: x_test_vector, self.y_vector: y_test_vector}))
+                dbg.dprint("Testing Accuracy:" +\
+                    str(sess.run(self.accuracy,\
+                        feed_dict={self.x_vector: x_test_vector, self.y_vector: y_test_vector})))
             else:
                 raise Exception("Please provide testing data before running the test method.")
     def load_train_data(self, train_data):
