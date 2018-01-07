@@ -206,15 +206,27 @@ class NeuralNetwork():
                 raise Exception("Please provide testing data before running the test method.")
     def load_train_data(self, train_data):
         # Validate dataset dimensions
-        for data_point in train_data:
-            assert(len(data_point) == self.data_point_size)
-        self.train_data = train_data
+        if(len(train_data[0]) == self.data_point_size):
+            for data_point in train_data:
+                assert(len(data_point) == self.data_point_size)
+            self.train_data = narray(train_data)
+        else:
+            # Extra step for converting binary data into one-hot encoding for tf
+            for data_point in train_data:
+                assert(len(data_point) == (self.data_point_size-1))
+            self.train_data = narray(self.binary_2_one_hot(train_data))
 
     def load_test_data(self, test_data):
         # Validate dataset dimensions
-        for data_point in test_data:
-            assert(len(data_point) == self.data_point_size)
-        self.test_data = test_data
+        if(len(test_data[0]) == self.data_point_size):
+            for data_point in test_data:
+                assert(len(data_point) == self.data_point_size)
+            self.test_data = narray(test_data)
+        else:
+            # Extra step for converting binary data into one-hot encoding for tf
+            for data_point in test_data:
+                assert(len(data_point) == (self.data_point_size-1))
+            self.test_data = narray(self.binary_2_one_hot(test_data))
 
     def binary_2_one_hot(self, data):
         # Convert binary class data for one-hot training
