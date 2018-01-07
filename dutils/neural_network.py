@@ -194,16 +194,45 @@ class NeuralNetwork():
             assert(len(data_point) == self.data_point_size)
         self.test_data = test_data
 
+    def binary_2_one_hot(self, data):
+        # Convert binary class data for one-hot training
+        # TODO: Make this work for higher-dimension data
+        rVal = []
+        for data_point in data:
+            new_dp = []
+            input_data = data_point[:self.input_layer_number_neurons]
+            output_class = data_point[self.input_layer_number_neurons:][0]
+            if output_class == 0:
+                output_data = [1,0]
+            elif output_class == 1:
+                output_data = [0,1]
+            else:
+                raise Exception("Data should only have 2 classes.")
+            new_dp.extend(input_data)
+            new_dp.extend(output_data)
+            rVal.append(tuple(new_dp))
+        return rVal
+
     def load_dataset(self, dataset_obj):
         # Load training and testing data from dataset object
-        # Validate dataset dimensions
-        for data_point in dataset_obj.train_data:
-                assert(len(data_point) == self.data_point_size)
-        for data_point in dataset_obj.test_data:
-                assert(len(data_point) == self.data_point_size)
-        # Load dataset
-        self.train_data = dataset_obj.train_data
-        self.test_data = dataset_obj.test_data
+        if(len(dataset_obj.train_data[0]) == self.data_point_size):
+            # Validate dataset dimensions
+            for data_point in dataset_obj.train_data:
+                    assert(len(data_point) == self.data_point_size)
+            for data_point in dataset_obj.test_data:
+                    assert(len(data_point) == self.data_point_size)
+            # Load dataset
+            self.train_data = dataset_obj.train_data
+            self.test_data = dataset_obj.test_data
+        else:
+            # Extra step for converting binary data into one-hot encoding for tf
+            for data_point in dataset_obj.train_data:
+                    assert(len(data_point) == (self.data_point_size-1))
+            for data_point in dataset_obj.test_data:
+                    assert(len(data_point) == (self.data_point_size-1))
+            # Load dataset
+            self.train_data = self.binary_2_one_hot(dataset_obj.train_data)
+            self.test_data = self.binary_2_one_hot(dataset_obj.test_data)
 
     def pack_weights(self):
         # TODO: Weights should be serialized into a 1-dimension array in the

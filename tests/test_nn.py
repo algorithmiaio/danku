@@ -29,7 +29,7 @@ def test_2lnn_load_dataset():
 def test_train_2lnn():
     il_nn = 2
     hl_nn = []
-    ol_nn = 1
+    ol_nn = 2
     nn = NeuralNetwork(il_nn, hl_nn, ol_nn)
     scd = SampleCircleDataset()
     scd.init_random_training_indexes()
