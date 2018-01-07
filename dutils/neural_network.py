@@ -2,9 +2,10 @@
 # Trained on the sample datasets
 import tensorflow as tf
 import dutils.debug as dbg
+from numpy import array as narray
 
 class NeuralNetwork():
-    def __init__(self, il_nn, hl_nn, ol_nn, lr=0.1, ns=100, bs=10, ds=10):
+    def __init__(self, il_nn, hl_nn, ol_nn, lr=0.1, ns=500, bs=5, ds=50):
         # Making Python type-safe!
         if not isinstance(lr, int) and not isinstance(lr, float):
             raise Exception("Learning rate must be an integer or float.")
@@ -36,7 +37,9 @@ class NeuralNetwork():
         self.train_data = []
         self.test_data = []
         self.weights = []
+        self.bias = []
         self.tf_weights = None
+        self.tf_bias = []
         self.tf_init = None
         self.tf_layers = None
         self.x_vector = None
@@ -67,6 +70,7 @@ class NeuralNetwork():
                     self.hidden_layer_number_neurons[i]
                 )
 
+        # Output weights
         if len(self.hidden_layer_number_neurons) == 0:
             self.tf_weights["out"] = tf.Variable(tf.random_normal([\
                 self.input_layer_number_neurons,\
@@ -82,27 +86,40 @@ class NeuralNetwork():
                 [self.hidden_layer_number_neurons[-1] * [0]] *\
                 self.output_layer_number_neurons)
 
+        # Bias
+        self.tf_bias = {}
+        for i in range(len(self.hidden_layer_number_neurons)):
+            self.tf_bias["b" + str(i+1)] = tf.Variable(tf.random_normal([self.hidden_layer_number_neurons[i]]))
+            self.bias.append(self.hidden_layer_number_neurons[i] * [0])
+
+        # Output bias
+        self.tf_bias["out"] = tf.Variable(tf.random_normal(\
+            [self.output_layer_number_neurons]))
+        self.bias.append(self.output_layer_number_neurons * [0])
+
         # Initialize layers
         self.tf_layers = {}
         for i in range(len(self.hidden_layer_number_neurons)):
             if i == 0:
-                self.tf_layers["l" + str(i+1)] = tf.matmul(\
-                    self.x_vector, self.tf_weights["h" + str(i+1)])
+                self.tf_layers["l" + str(i+1)] = tf.add(tf.matmul(\
+                    self.x_vector, self.tf_weights["h" + str(i+1)]),\
+                    self.tf_bias["b" + str(i+1)])
             else:
-                self.tf_layers["l" + str(i+1)] = tf.matmul(\
-                    self.tf_weights["h" + str(i)],\
-                    self.tf_weights["h" + str(i+1)])
+                self.tf_layers["l" + str(i+1)] = tf.add(tf.matmul(\
+                    self.tf_layers["l" + str(i)],\
+                    self.tf_weights["h" + str(i+1)]),\
+                    self.tf_bias["b" + str(i+1)])
 
         if len(self.hidden_layer_number_neurons) == 0:
             self.tf_layers["out"] = tf.matmul(
-                self.x_vector, self.tf_weights['out'])
+                self.x_vector, self.tf_weights["out"]) + self.tf_bias["out"]
         else:
             # Using the previous layer doesn't work. Need to create an
             # equivalent placeholder instead
             self.tf_layers["out"] = tf.matmul(\
-                self.tf_weights["h" +\
-                    str(len(self.hidden_layer_number_neurons))],\
-                self.tf_weights["out"])
+                self.tf_layers["l" +\
+                str(len(self.hidden_layer_number_neurons))],\
+                self.tf_weights["out"]) + self.tf_bias["out"]
         # Construct model
         logits = self.tf_layers["out"]
         prediction = tf.nn.relu(logits)
@@ -125,10 +142,15 @@ class NeuralNetwork():
         with tf.Session() as sess:
             sess.run(self.tf_init)
             for step in range(1, self.number_steps+1):
+                start = ((step-1) * self.batch_size) % len(self.train_data)
+                end = (step * self.batch_size) % len(self.train_data)
+                # For being to slide over dataset in a batch window
+                if end == 0:
+                    end = None
                 x_train_vector = list(map(lambda x: list(x[:self.input_layer_number_neurons]),\
-                    self.train_data))
+                    self.train_data[start:end]))
                 y_train_vector = list(map(lambda x: list(x[self.input_layer_number_neurons:]),\
-                    self.train_data))
+                    self.train_data[start:end]))
                 # Backpropogation
                 sess.run(self.train_op,
                     feed_dict={self.x_vector: x_train_vector, self.y_vector: y_train_vector})
@@ -222,8 +244,8 @@ class NeuralNetwork():
             for data_point in dataset_obj.test_data:
                     assert(len(data_point) == self.data_point_size)
             # Load dataset
-            self.train_data = dataset_obj.train_data
-            self.test_data = dataset_obj.test_data
+            self.train_data = narray(dataset_obj.train_data)
+            self.test_data = narray(dataset_obj.test_data)
         else:
             # Extra step for converting binary data into one-hot encoding for tf
             for data_point in dataset_obj.train_data:
@@ -231,15 +253,15 @@ class NeuralNetwork():
             for data_point in dataset_obj.test_data:
                     assert(len(data_point) == (self.data_point_size-1))
             # Load dataset
-            self.train_data = self.binary_2_one_hot(dataset_obj.train_data)
-            self.test_data = self.binary_2_one_hot(dataset_obj.test_data)
+            self.train_data = narray(self.binary_2_one_hot(dataset_obj.train_data))
+            self.test_data = narray(self.binary_2_one_hot(dataset_obj.test_data))
 
     def pack_weights(self):
-        # TODO: Weights should be serialized into a 1-dimension array in the
+        # TODO: Weights should be serialized into a 1-dimension narray in the
         # format defined in the danku contract
         return
 
     def unpack_weights(self):
-        # TODO: Weights should be serialized into a 3-dimension array in the
+        # TODO: Weights should be serialized into a 3-dimension narray in the
         # format defined in the danku contract
         return
