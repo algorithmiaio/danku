@@ -94,10 +94,6 @@ def test_danku_init(web3, chain):
         dbg.dprint("(" + str(training_partition[i]) + ") Train data,nonce: " + str(train_data[start:end]) + "," + str(scd.train_nonce[i]))
         init3_tx.append(danku.transact().init3(train_data[start:end], scd.train_nonce[i]))
         chain.wait.for_receipt(init3_tx[i])
-    for i in range(len(testing_partition)):
-        start = i*scd.dps*scd.partition_size
-        end = start + scd.dps*scd.partition_size
-        dbg.dprint("(" + str(testing_partition[i]) + ") Test data,nonce: " + str(test_data[start:end]) + "," + str(scd.test_nonce[i]))
 
     init3_block_number = web3.eth.blockNumber
     dbg.dprint("Init3 block: " + str(init3_block_number))
@@ -146,6 +142,18 @@ def test_danku_init(web3, chain):
     submit_tx = danku.transact().submit_model(solver_account, il_nn, ol_nn, hl_nn,\
         int_packed_trained_weights)
     chain.wait.for_receipt(submit_tx)
+
+    # Wait until the submission period ends
+    chain.wait.for_block(init3_block_number + submission_t)
+
+    # Reveal the testing dataset after the submission period ends
+    reveal_tx = []
+    for i in range(len(testing_partition)):
+        start = i*scd.dps*scd.partition_size
+        end = start + scd.dps*scd.partition_size
+        dbg.dprint("(" + str(testing_partition[i]) + ") Test data,nonce: " + str(test_data[start:end]) + "," + str(scd.test_nonce[i]))
+        reveal_tx.append(danku.transact().reveal_test_data(test_data[start:end], scd.test_nonce[i]))
+        chain.wait.for_receipt(reveal_tx[i])
 
 def scale_packed_data(data, scale):
     # Scale data and convert it to an integer
