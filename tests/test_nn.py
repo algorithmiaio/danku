@@ -5,7 +5,7 @@ from dutils.dataset import SampleCircleDataset, SampleSwirlDataset,\
 def test_create_2_layer_nn():
     il_nn = 2
     hl_nn = []
-    ol_nn = 1
+    ol_nn = 2
     nn = NeuralNetwork(il_nn, hl_nn, ol_nn)
     nn.init_network()
     assert(not isinstance(nn.tf_weights, type(None)))
@@ -15,7 +15,7 @@ def test_create_2_layer_nn():
 def test_2lnn_load_dataset():
     il_nn = 2
     hl_nn = []
-    ol_nn = 1
+    ol_nn = 2
     nn = NeuralNetwork(il_nn, hl_nn, ol_nn)
     scd = SampleHalfDividedDataset()
     scd.init_random_training_indexes()
@@ -44,7 +44,7 @@ def test_train_2lnn():
 def test_create_3_layer_nn():
     il_nn = 2
     hl_nn = [4]
-    ol_nn = 1
+    ol_nn = 2
     nn = NeuralNetwork(il_nn, hl_nn, ol_nn)
     nn.init_network()
     assert(not isinstance(nn.tf_weights, type(None)))
@@ -54,7 +54,7 @@ def test_create_3_layer_nn():
 def test_create_5_layer_nn():
     il_nn = 2
     hl_nn = [4,5,6]
-    ol_nn = 1
+    ol_nn = 2
     nn = NeuralNetwork(il_nn, hl_nn, ol_nn)
     nn.init_network()
     assert(not isinstance(nn.tf_weights, type(None)))
