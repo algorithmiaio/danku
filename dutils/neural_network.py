@@ -95,7 +95,7 @@ class NeuralNetwork():
 
         # Output bias
         self.tf_bias["out"] = tf.Variable(tf.random_normal(\
-            [self.output_layer_number_neurons]), name="b" + str(i+1))
+            [self.output_layer_number_neurons]), name="b_out")
         self.bias.append(self.output_layer_number_neurons * [0])
 
         # Initialize layers
