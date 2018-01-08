@@ -84,12 +84,13 @@ def test_danku_init(web3, chain):
     # Since the data array is too large, we're going to send them in single data group chunks
     train_data = scd.pack_data(scd.train_data)
     test_data = scd.pack_data(scd.test_data)
+    init3_tx = []
     for i in range(len(training_partition)):
         start = i*scd.dps*scd.partition_size
         end = start + scd.dps*scd.partition_size
         dbg.dprint("(" + str(training_partition[i]) + ") Train data,nonce: " + str(train_data[start:end]) + "," + str(scd.train_nonce[i]))
-        init3_tx = danku.transact().init3(train_data[start:end], scd.train_nonce[i])
-        chain.wait.for_receipt(init3_tx)
+        init3_tx.append(danku.transact().init3(train_data[start:end], scd.train_nonce[i]))
+        chain.wait.for_receipt(init3_tx[i])
     for i in range(len(testing_partition)):
         start = i*scd.dps*scd.partition_size
         end = start + scd.dps*scd.partition_size
