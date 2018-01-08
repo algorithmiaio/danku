@@ -136,8 +136,8 @@ def test_packing_weights():
 
     packed_weights = nn.pack_weights(weights)
 
-    for v in range(len(packed_weights)):
-        assert(packed_weights[v] == expected_packed_weights[v])
+    for w in range(len(packed_weights)):
+        assert(packed_weights[w] == expected_packed_weights[w])
 
 def test_unpacking_weights():
     il_nn = 2
@@ -155,9 +155,43 @@ def test_unpacking_weights():
 
     unpacked_weights = nn.unpack_weights(packed_weights, il_nn, hl_nn, ol_nn)
 
-    # g for group, d for data point and v for value
-    for g in range(len(unpacked_weights)):
-        for d in range(len(unpacked_weights[g])):
-            for v in range(len(unpacked_weights[g][d])):
-                assert(unpacked_weights[g][d][v] ==\
-                    expected_unpacked_weights[g][d][v])
+    # l for layer, n for neuron and w for weight
+    for l in range(len(unpacked_weights)):
+        for n in range(len(unpacked_weights[l])):
+            for w in range(len(unpacked_weights[l][n])):
+                assert(unpacked_weights[l][n][w] ==\
+                    expected_unpacked_weights[l][n][w])
+
+def test_packing_biases():
+    il_nn = 2
+    hl_nn = [2,3]
+    ol_nn = 2
+    nn = NeuralNetwork(il_nn, hl_nn, ol_nn)
+    biases = [[0.36075622, 0.89433998], [0.47277868, -0.33438078, 0.62383133],\
+        [-0.21877599, 1.428687]]
+
+    expected_packed_biases = [0.36075622, 0.89433998, 0.47277868, -0.33438078,\
+        0.62383133, -0.21877599, 1.428687]
+
+    packed_biases = nn.pack_biases(biases)
+
+    for b in range(len(packed_biases)):
+        assert(packed_biases[b] == expected_packed_biases[b])
+
+def test_unpacking_biases():
+    il_nn = 2
+    hl_nn = [2,3]
+    ol_nn = 2
+    nn = NeuralNetwork(il_nn, hl_nn, ol_nn)
+    packed_biases = [0.36075622, 0.89433998, 0.47277868, -0.33438078,\
+        0.62383133, -0.21877599, 1.428687]
+
+    expected_unpacked_biases = [[0.36075622, 0.89433998], [0.47277868,\
+        -0.33438078, 0.62383133], [-0.21877599, 1.428687]]
+
+    unpacked_biases = nn.unpack_biases(packed_biases, hl_nn, ol_nn)
+
+    # l for layer and b for bias
+    for l in range(len(unpacked_biases)):
+        for b in range(len(unpacked_biases[l])):
+            assert(unpacked_biases[l][b] == expected_unpacked_biases[l][b])
