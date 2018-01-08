@@ -139,7 +139,7 @@ class SampleCircleDataset(Dataset):
     _________________________  (-)
 (-) 6 5 4 3 2 1 0 1 2 3 4 5 6 (+)
     '''
-    def __init__(self, max_num_data_groups=100, training_percentage=0.7,\
+    def __init__(self, training_percentage=0.7,\
         partition_size=5):
         data = [(0,6,1),(-1,5,1),(0,5,1),(1,5,1),(-2,4,1),(-1,4,1),(1,4,1),
         (2,4,1),(-3,3,1),(-2,3,1),(2,3,1),(3,3,1),(-4,2,1),(-3,2,1),(3,2,1),
@@ -181,7 +181,7 @@ class SampleSwirlDataset(Dataset):
     _________________________  (-)
 (-) 6 5 4 3 2 1 0 1 2 3 4 5 6 (+)
     '''
-    def __init__(self, max_num_data_groups=100, training_percentage=0.7,\
+    def __init__(self, training_percentage=0.7,\
         partition_size=5):
         data = [(-5,6,0),(-4,6,0),(-3,6,0),(-2,6,0),(-1,6,0),(0,6,0),
         (1,6,0),(2,6,0),(3,6,0),(-5,5,0),(-5,4,0),(-5,3,0),(-5,2,0),(-5,1,0),
@@ -220,7 +220,7 @@ class SampleHalfDividedDataset(Dataset):
     _________________________  (-)
 (-) 6 5 4 3 2 1 0 1 2 3 4 5 6 (+)
     '''
-    def __init__(self, max_num_data_groups=100, training_percentage=0.7,\
+    def __init__(self, training_percentage=0.7,\
         partition_size=5):
         data = [(-3,6,1),(-1,6,1),(-5,5,1),(1,5,1),(-6,4,1),(-4,4,1),
         (-2,4,1),(0,4,1),(-5,3,1),(-2,3,1),(-6,2,1),(-4,2,1),(-3,2,1),(-5,0,1),
@@ -255,7 +255,7 @@ class SampleAcrossCornerDataset(Dataset):
     _________________________  (-)
 (-) 6 5 4 3 2 1 0 1 2 3 4 5 6 (+)
     '''
-    def __init__(self, max_num_data_groups=100, training_percentage=0.7,\
+    def __init__(self, training_percentage=0.7,\
         partition_size=5):
         data = [(-6,6,0),(-5,6,0),(-4,6,0),(-6,5,0),(-5,5,0),(-4,5,0),
         (-3,5,0),(-6,4,0),(-5,4,0),(-4,4,0),(-3,4,0),(-5,3,0),(-4,3,0),(-3,3,0),
