@@ -273,12 +273,46 @@ class NeuralNetwork():
             self.train_data = narray(self.binary_2_one_hot(dataset_obj.train_data))
             self.test_data = narray(self.binary_2_one_hot(dataset_obj.test_data))
 
-    def pack_weights(self):
-        # TODO: Weights should be serialized into a 1-dimension narray in the
-        # format defined in the danku contract
-        return
+    def pack_weights(self, weights):
+        # In the NN class, weights are fortmatted as: w[l_i][l_ni][pl_ni]
+        # The Danku contracts formats it in the same way, but as a 1-dimension
+        # array.
+        packed_array = []
+        for l_i in range(len(weights)):
+            for l_ni in range(len(weights[l_i])):
+                for pl_ni in range(len(weights[l_i][l_ni])):
+                    packed_array.append(weights[l_i][l_ni][pl_ni])
+        return packed_array
 
-    def unpack_weights(self):
-        # TODO: Weights should be serialized into a 3-dimension narray in the
-        # format defined in the danku contract
-        return
+    def unpack_weights(self, weights, il_nn, hl_nn, ol_nn):
+        # In the NN class, weights are fortmatted as: w[l_i][l_ni][pl_ni]
+        # The Danku contracts formats it in the same way, but as a 1-dimension
+        # array.
+        unpacked_array = []
+        index_counter = 0
+        # Iterate over all hidden layers + output layer
+        for l_i in range(len(hl_nn)+1):
+            unpacked_array.append([])
+            # Iterate over hidden layers
+            if l_i != len(hl_nn):
+                for l_ni in range(hl_nn[l_i]):
+                    unpacked_array[l_i].append([])
+                    # If it's the first hidden layer (it's connected w/ the input layer)
+                    if l_i == 0:
+                        prev_nn = il_nn
+                    else:
+                        prev_nn = hl_nn[l_i-1]
+                    for pl_ni in range(prev_nn):
+                        unpacked_array[l_i][l_ni].append(\
+                            weights[index_counter])
+                        index_counter += 1
+            # Iterate over the output layer
+            else:
+                for l_ni in range(ol_nn):
+                    unpacked_array[l_i].append([])
+                    prev_nn = hl_nn[-1]
+                    for pl_ni in range(prev_nn):
+                        unpacked_array[l_i][l_ni].append(\
+                            weights[index_counter])
+                        index_counter += 1
+        return unpacked_array
