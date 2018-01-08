@@ -180,7 +180,7 @@ contract Danku {
     return submission_queue.length-1;
   }
 
-    function reveal_test_data(int256[] _test_data_groups, int256[] _test_data_group_nonces) external {
+    function reveal_test_data(int256[] _test_data_groups, int256 _test_data_group_nonces) external {
     // Make sure contract is not terminated
     assert(contract_terminated == false);
     // Make sure it's not the initialization stage anymore
@@ -190,13 +190,12 @@ contract Danku {
     // Make sure it's revealed within the reveal stage
     assert(block.number < init3_block_height + submission_stage_block_size + reveal_test_data_groups_block_size);
     // Verify data group and nonce lengths
-    assert(_test_data_groups.length == max_num_data_groups / partition_size - training_partition.length);
-    assert(_test_data_group_nonces.length == max_num_data_groups / partition_size - training_partition.length);
+    assert((_test_data_groups.length/partition_size)/datapoint_size == 1);
     // Verify data group hashes
-    for (uint i = 0; i < _test_data_groups.length; i++) {
-      assert(sha_data_group(_test_data_groups, _test_data_group_nonces[i]) == hashed_data_groups[testing_partition[i]]);
-    }
-    // Assign testing data
+    assert(sha_data_group(_test_data_groups, _test_data_group_nonces) ==
+      hashed_data_groups[testing_partition[test_dg_revealed]]);
+    test_dg_revealed += 1;
+    // Assign testing data after verifying the corresponding hash
     unpack_data_groups(_test_data_groups, false);
     // Use test data for evaluation
     use_test_data = true;
@@ -379,11 +378,10 @@ contract Danku {
         train_data.push(merged_data_group[k]);
       }
     } else {
+      // Assign testing data
       for (uint l = 0; l < merged_data_group.length; l++) {
         test_data.push(merged_data_group[l]);
       }
-      // Assign testing data
-      test_data = merged_data_group;
     }
   }
 
