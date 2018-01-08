@@ -143,6 +143,11 @@ def test_danku_init(web3, chain):
         int_packed_trained_weights)
     chain.wait.for_receipt(submit_tx)
 
+    # Get submission index ID
+    submission_id = danku.call().get_submission_id(solver_account, il_nn,\
+        ol_nn, hl_nn, int_packed_trained_weights)
+    dbg.dprint("Submission ID: " + str(submission_id))
+
     # Wait until the submission period ends
     chain.wait.for_block(init3_block_number + submission_t)
 
