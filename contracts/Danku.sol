@@ -149,12 +149,11 @@ contract Danku {
 
   function submit_model(
     // Public function for users to submit a solution
-    // Returns the submission index
-    address paymentAddress,
+    address payment_address,
     uint num_neurons_input_layer,
     uint num_neurons_output_layer,
     uint[] num_neurons_hidden_layer,
-    int[] weights) public returns (uint) {
+    int[] weights) public {
       // Make sure contract is not terminated
       assert(contract_terminated == false);
       // Make sure it's not the initialization stage anymore
@@ -171,13 +170,46 @@ contract Danku {
       assert(valid_weights(weights, num_neurons_input_layer, num_neurons_output_layer, num_neurons_hidden_layer));
       // Add solution to submission queue
       submission_queue.push(Submission(
-        paymentAddress,
+        payment_address,
         num_neurons_input_layer,
         num_neurons_output_layer,
         num_neurons_hidden_layer,
         weights));
+  }
 
-    return submission_queue.length-1;
+  function get_submission_id(
+    // Public function that returns the submission index ID
+    address paymentAddress,
+    uint num_neurons_input_layer,
+    uint num_neurons_output_layer,
+    uint[] num_neurons_hidden_layer,
+    int[] weights) public view returns (uint) {
+      // Iterate over submission queue to get submission index ID
+      for (uint i = 0; i < submission_queue.length; i++) {
+        if (submission_queue[i].payment_address != paymentAddress) {
+          continue;
+        }
+        if (submission_queue[i].num_neurons_input_layer != num_neurons_input_layer) {
+          continue;
+        }
+        if (submission_queue[i].num_neurons_output_layer != num_neurons_output_layer) {
+          continue;
+        }
+        for (uint j = 0; j < num_neurons_hidden_layer.length; j++) {
+            if (submission_queue[i].num_neurons_hidden_layer[j] != num_neurons_hidden_layer[j]) {
+              continue;
+            }
+        }
+        for (uint k = 0; k < weights.length; k++) {
+            if (submission_queue[i].weights[k] != weights[k]) {
+              continue;
+            }
+        }
+        // If everything matches, return the submission index
+        return i;
+      }
+      // If submission is not in the queue, just throw an exception
+      require(false);
   }
 
     function reveal_test_data(int256[] _test_data_groups, int256 _test_data_group_nonces) external {
