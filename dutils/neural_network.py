@@ -57,14 +57,14 @@ class NeuralNetwork():
             if i == 0:
                 self.tf_weights["h" + str(i+1)] = tf.Variable(\
                     tf.random_normal([self.input_layer_number_neurons,\
-                    self.hidden_layer_number_neurons[i]]))
+                    self.hidden_layer_number_neurons[i]]), name="h" + str(i+1))
                 self.weights.append(\
                     [self.input_layer_number_neurons * [0]] *\
                     self.hidden_layer_number_neurons[i])
             else:
                 self.tf_weights["h" + str(i+1)] = tf.Variable(\
                     tf.random_normal([self.hidden_layer_number_neurons[i-1],\
-                    self.hidden_layer_number_neurons[i]]))
+                    self.hidden_layer_number_neurons[i]]), name="h" + str(i+1))
                 self.weights.append(\
                     [self.hidden_layer_number_neurons[i-1] * [0]] *\
                     self.hidden_layer_number_neurons[i]
@@ -74,14 +74,14 @@ class NeuralNetwork():
         if len(self.hidden_layer_number_neurons) == 0:
             self.tf_weights["out"] = tf.Variable(tf.random_normal([\
                 self.input_layer_number_neurons,\
-                self.output_layer_number_neurons]))
+                self.output_layer_number_neurons]), name="out")
             self.weights.append(\
                 [self.input_layer_number_neurons * [0]] *\
                 self.output_layer_number_neurons)
         else:
             self.tf_weights["out"] = tf.Variable(tf.random_normal([\
                 self.hidden_layer_number_neurons[-1],
-                self.output_layer_number_neurons]))
+                self.output_layer_number_neurons]), name="out")
             self.weights.append(\
                 [self.hidden_layer_number_neurons[-1] * [0]] *\
                 self.output_layer_number_neurons)
@@ -89,12 +89,13 @@ class NeuralNetwork():
         # Bias
         self.tf_bias = {}
         for i in range(len(self.hidden_layer_number_neurons)):
-            self.tf_bias["b" + str(i+1)] = tf.Variable(tf.random_normal([self.hidden_layer_number_neurons[i]]))
+            self.tf_bias["b" + str(i+1)] = tf.Variable(tf.random_normal([\
+                self.hidden_layer_number_neurons[i]]), name="b" + str(i+1))
             self.bias.append(self.hidden_layer_number_neurons[i] * [0])
 
         # Output bias
         self.tf_bias["out"] = tf.Variable(tf.random_normal(\
-            [self.output_layer_number_neurons]))
+            [self.output_layer_number_neurons]), name="b" + str(i+1))
         self.bias.append(self.output_layer_number_neurons * [0])
 
         # Initialize layers
