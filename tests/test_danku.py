@@ -142,7 +142,7 @@ def test_danku_init(web3, chain):
 
     dbg.dprint("Solver address: " + str(solver_account))
 
-    # Pass the packed weights to the contract
+    # Submit the solution to the contract
     submit_tx = danku.transact().submit_model(solver_account, il_nn, ol_nn, hl_nn,\
         int_packed_trained_weights)
     chain.wait.for_receipt(submit_tx)
