@@ -160,6 +160,12 @@ def test_danku_init(web3, chain):
         reveal_tx.append(danku.transact().reveal_test_data(test_data[start:end], scd.test_nonce[i]))
         chain.wait.for_receipt(reveal_tx[i])
 
+    # Wait until the test reveal period ends
+    chain.wait.for_block(init3_block_number + submission_t + test_reveal_t)
+
+    # Evaluate the submitted solution
+    eval_tx = danku.transact().evaluate_model(submission_id)
+
 def scale_packed_data(data, scale):
     # Scale data and convert it to an integer
     return list(map(lambda x: int(x*scale), data))
