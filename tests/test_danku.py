@@ -3,19 +3,6 @@ from dutils.neural_network import NeuralNetwork
 import dutils.debug as dbg
 from secrets import randbelow
 
-def test_python_solidity_hashing_compatability():
-    # Make sure Python and solidity hashes the data groups in the same manner
-    assert(False)
-
-def test_dataset_partitioning():
-    assert(False)
-
-def test_train_single_layer_neural_network():
-    assert(False)
-
-def test_train_multi_layer_neural_network():
-    assert(False)
-
 def test_danku_init(web3, chain):
     _hashed_data_groups = []
     accuracy_criteria = 9059 # 90.59%
@@ -134,6 +121,19 @@ def test_danku_init(web3, chain):
 
     dbg.dprint("Trained weights: " + str(trained_weights))
     dbg.dprint("Trained biases: " + str(trained_biases))
+
+def test_python_solidity_hashing_compatability():
+    # Make sure Python and solidity hashes the data groups in the same manner
+    assert(False)
+
+def test_dataset_partitioning():
+    assert(False)
+
+def test_train_single_layer_neural_network():
+    assert(False)
+
+def test_train_multi_layer_neural_network():
+    assert(False)
 
 def test_danku_model_submission():
     assert(False)
