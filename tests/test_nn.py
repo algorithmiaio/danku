@@ -17,7 +17,7 @@ def test_2lnn_load_dataset():
     hl_nn = []
     ol_nn = 1
     nn = NeuralNetwork(il_nn, hl_nn, ol_nn)
-    scd = SampleCircleDataset()
+    scd = SampleHalfDividedDataset()
     scd.init_random_training_indexes()
     scd.danku_init()
     nn.load_dataset(scd)
