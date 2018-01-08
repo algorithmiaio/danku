@@ -15,8 +15,8 @@ class Dataset(object):
         self.training_percentage = training_percentage
         self.training_data_group_size = int(training_percentage *\
             self.max_num_data_groups)
-        self.testing_data_group_size = int((1-training_percentage) *\
-            self.max_num_data_groups)
+        self.testing_data_group_size = self.max_num_data_groups -\
+            self.training_data_group_size
         self.num_data_groups = int(self.max_num_data_groups /\
             self.partition_size)
         self.num_train_data_groups = int(self.training_data_group_size/\
