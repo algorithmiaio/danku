@@ -164,7 +164,9 @@ contract Danku {
       // Make sure that num of neurons in the input & output layer matches
       // the problem description
       assert(num_neurons_input_layer == datapoint_size - prediction_size);
-      assert(num_neurons_output_layer == prediction_size);
+      // Because we can encode binary output in two different ways, we check
+      // for both of them
+      assert(num_neurons_output_layer == prediction_size || num_neurons_output_layer == (prediction_size+1));
       // Make sure that the number of weights match network structure
       assert(valid_weights(weights, num_neurons_input_layer, num_neurons_output_layer, num_neurons_hidden_layer));
       // Add solution to submission queue
