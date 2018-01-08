@@ -316,3 +316,28 @@ class NeuralNetwork():
                             weights[index_counter])
                         index_counter += 1
         return unpacked_array
+
+    def pack_biases(self, biases):
+        packed_array = []
+        for l_i in range(len(biases)):
+            for l_ni in range(len(biases[l_i])):
+                packed_array.append(biases[l_i][l_ni])
+        return packed_array
+
+    def unpack_biases(self, biases, hl_nn, ol_nn):
+        unpacked_array = []
+        index_counter = 0
+        # Iterate over all hidden layers + output layer
+        for l_i in range(len(hl_nn)+1):
+            unpacked_array.append([])
+            # If it's a hidden layer
+            if l_i != (len(hl_nn)):
+                for l_ni in range(hl_nn[l_i]):
+                    unpacked_array[l_i].append(biases[index_counter])
+                    index_counter += 1
+            # If it's the output layer
+            else:
+                for l_ni in range(ol_nn):
+                    unpacked_array[l_i].append(biases[index_counter])
+                    index_counter += 1
+        return unpacked_array
