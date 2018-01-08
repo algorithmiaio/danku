@@ -51,12 +51,70 @@ def test_create_3_layer_nn():
     assert(not isinstance(nn.tf_init, type(None)))
     assert(not isinstance(nn.tf_layers, type(None)))
 
+def test_3lnn_load_dataset():
+    il_nn = 2
+    hl_nn = [4]
+    ol_nn = 2
+    nn = NeuralNetwork(il_nn, hl_nn, ol_nn)
+    scd = SampleHalfDividedDataset()
+    scd.init_random_training_indexes()
+    scd.danku_init()
+    nn.load_dataset(scd)
+    nn.init_network()
+    assert(not isinstance(nn.tf_weights, type(None)))
+    assert(not isinstance(nn.tf_init, type(None)))
+    assert(not isinstance(nn.tf_layers, type(None)))
+
+def test_train_3lnn():
+    il_nn = 2
+    hl_nn = [4]
+    ol_nn = 2
+    nn = NeuralNetwork(il_nn, hl_nn, ol_nn)
+    scd = SampleHalfDividedDataset(training_percentage=0.8)
+    scd.init_random_training_indexes()
+    scd.danku_init()
+    nn.load_dataset(scd)
+    nn.init_network()
+    nn.train()
+    assert(not isinstance(nn.tf_weights, type(None)))
+    assert(not isinstance(nn.tf_init, type(None)))
+    assert(not isinstance(nn.tf_layers, type(None)))
+
 def test_create_5_layer_nn():
     il_nn = 2
     hl_nn = [4,5,6]
     ol_nn = 2
     nn = NeuralNetwork(il_nn, hl_nn, ol_nn)
     nn.init_network()
+    assert(not isinstance(nn.tf_weights, type(None)))
+    assert(not isinstance(nn.tf_init, type(None)))
+    assert(not isinstance(nn.tf_layers, type(None)))
+
+def test_5lnn_load_dataset():
+    il_nn = 2
+    hl_nn = [4,5,6]
+    ol_nn = 2
+    nn = NeuralNetwork(il_nn, hl_nn, ol_nn)
+    scd = SampleHalfDividedDataset()
+    scd.init_random_training_indexes()
+    scd.danku_init()
+    nn.load_dataset(scd)
+    nn.init_network()
+    assert(not isinstance(nn.tf_weights, type(None)))
+    assert(not isinstance(nn.tf_init, type(None)))
+    assert(not isinstance(nn.tf_layers, type(None)))
+
+def test_train_5lnn():
+    il_nn = 2
+    hl_nn = [4,5,6]
+    ol_nn = 2
+    nn = NeuralNetwork(il_nn, hl_nn, ol_nn)
+    scd = SampleHalfDividedDataset(training_percentage=0.8)
+    scd.init_random_training_indexes()
+    scd.danku_init()
+    nn.load_dataset(scd)
+    nn.init_network()
+    nn.train()
     assert(not isinstance(nn.tf_weights, type(None)))
     assert(not isinstance(nn.tf_init, type(None)))
     assert(not isinstance(nn.tf_layers, type(None)))
