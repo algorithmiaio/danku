@@ -10,6 +10,9 @@ def test_danku_init(web3, chain):
     evaluation_t = 5 # 1 minute for evaluation
     test_reveal_t = 5 # 1 minute for revealing testing dataset
 
+    w_scale = 1000 # Scale up weights by 1000x
+    b_scale = 1000 # Scale up biases by 1000x
+
     danku, _ = chain.provider.get_or_deploy_contract('Danku')
 
     offer_account = web3.eth.accounts[1]
@@ -122,6 +125,31 @@ def test_danku_init(web3, chain):
 
     dbg.dprint("Trained weights: " + str(trained_weights))
     dbg.dprint("Trained biases: " + str(trained_biases))
+
+    packed_trained_weights = nn.pack_weights(trained_weights)
+    dbg.dprint("Packed weights: " + str(packed_trained_weights))
+
+    packed_trained_biases = nn.pack_biases(trained_biases)
+    dbg.dprint("Packed biases: " + str(packed_trained_biases))
+
+    int_packed_trained_weights = scale_packed_data(packed_trained_weights,\
+        w_scale)
+    dbg.dprint("Packed integer weights: " + str(int_packed_trained_weights))
+
+    int_packed_trained_biases = scale_packed_data(packed_trained_biases,\
+        b_scale)
+    dbg.dprint("Packed integer biases: " + str(int_packed_trained_biases))
+
+    dbg.dprint("Solver address: " + str(solver_account))
+
+    # Pass the packed weights to the contract
+    submit_tx = danku.transact().submit_model(solver_account, il_nn, ol_nn, hl_nn,\
+        int_packed_trained_weights)
+    chain.wait.for_receipt(submit_tx)
+
+def scale_packed_data(data, scale):
+    # Scale data and convert it to an integer
+    return list(map(lambda x: int(x*scale), data))
 
 def test_python_solidity_hashing_compatability():
     # Make sure Python and solidity hashes the data groups in the same manner
