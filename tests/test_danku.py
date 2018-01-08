@@ -1,4 +1,5 @@
 from dutils.dataset import SampleHalfDividedDataset
+from dutils.neural_network import NeuralNetwork
 import dutils.debug as dbg
 from secrets import randbelow
 
@@ -39,7 +40,7 @@ def test_danku_init(web3, chain):
     # Deduct reward amount (1 ETH) and gas cost (21040 wei)
     assert bal == 999998999999999999978960
 
-    scd = SampleHalfDividedDataset(training_percentage=0.8, max_num_data_groups=50)
+    scd = SampleHalfDividedDataset(training_percentage=0.8)
     scd.generate_nonce()
     scd.sha_all_data_groups()
 
@@ -118,7 +119,21 @@ def test_danku_init(web3, chain):
             contract_train_data.append(danku.call().train_data(i,j))
     contract_train_data = scd.unpack_data(contract_train_data)
     dbg.dprint("Contract training data: " + str(contract_train_data))
-    assert(False)
+
+    il_nn = 2
+    hl_nn = [1]
+    ol_nn = 2
+    # Train a neural network with contract data
+    nn = NeuralNetwork(il_nn, hl_nn, ol_nn)
+    contract_train_data = nn.binary_2_one_hot(contract_train_data)
+    nn.load_train_data(contract_train_data)
+    nn.init_network()
+    nn.train()
+    trained_weights = nn.weights
+    trained_biases = nn.bias
+
+    dbg.dprint("Trained weights: " + str(trained_weights))
+    dbg.dprint("Trained biases: " + str(trained_biases))
 
 def test_danku_model_submission():
     assert(False)
