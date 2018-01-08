@@ -181,15 +181,20 @@ class NeuralNetwork():
             # Weights for hidden layers
             for l_i in range(len(self.hidden_layer_number_neurons)):
                 for l_ni in range(len(self.weights[l_i])):
+                    self.bias[l_i][l_ni] =\
+                        tf.trainable_variables(scope="b" + str(l_i+1))[0]\
+                        [l_ni].eval()
                     for pl_ni in range(len(self.weights[l_i][l_ni])):
-                        self.weights[l_i]\
-                        [l_ni]\
-                        [pl_ni] = tf.trainable_variables(scope="h" + str(l_i+1))[0][pl_ni][l_ni].eval()
+                        self.weights[l_i][l_ni][pl_ni] =\
+                            tf.trainable_variables(scope="h" + str(l_i+1))[0]\
+                            [pl_ni][l_ni].eval()
             # Weights for the last layer
             for l_ni in range(len(self.weights[-1])):
+                self.bias[-1][l_ni] =\
+                tf.trainable_variables(scope="bo")[0][l_ni].eval()
                 for pl_ni in range(len(self.weights[-1][l_ni])):
-                    self.weights[-1]\
-                    [l_ni][pl_ni] = tf.trainable_variables(scope="out")[0][pl_ni][l_ni].eval()
+                    self.weights[-1][l_ni][pl_ni] =\
+                    tf.trainable_variables(scope="out")[0][pl_ni][l_ni].eval()
             dbg.dprint("Weights saved!")
 
     def test(self):
