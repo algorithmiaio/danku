@@ -95,7 +95,7 @@ class NeuralNetwork():
 
         # Output bias
         self.tf_bias["out"] = tf.Variable(tf.random_normal(\
-            [self.output_layer_number_neurons]), name="b_out")
+            [self.output_layer_number_neurons]), name="bo")
         self.bias.append(self.output_layer_number_neurons * [0])
 
         # Initialize layers
@@ -178,16 +178,18 @@ class NeuralNetwork():
 
             dbg.dprint("Saving weights...")
             # Save the weights
+            # Weights for hidden layers
             for l_i in range(len(self.hidden_layer_number_neurons)):
                 for l_ni in range(len(self.weights[l_i])):
                     for pl_ni in range(len(self.weights[l_i][l_ni])):
-                        self.weights[l_i][l_ni][pl_ni] = self.tf_weights["h" + str(l_i+1)][pl_ni][l_ni].eval()
-                        # For last layer
-                        if l_i == len(self.hidden_layer_number_neurons)-1:
-                            self.weights[l_i][l_ni][pl_ni] = self.tf_weights["out"][pl_ni][l_ni].eval()
-                        # For hidden layers
-                        else:
-                            self.weights[l_i][l_ni][pl_ni] = self.tf_weights["h" + str(l_i+1)][pl_ni][l_ni].eval()
+                        self.weights[l_i]\
+                        [l_ni]\
+                        [pl_ni] = tf.trainable_variables(scope="h" + str(l_i+1))[0][pl_ni][l_ni].eval()
+            # Weights for the last layer
+            for l_ni in range(len(self.weights[-1])):
+                for pl_ni in range(len(self.weights[-1][l_ni])):
+                    self.weights[-1]\
+                    [l_ni][pl_ni] = tf.trainable_variables(scope="out")[0][pl_ni][l_ni].eval()
             dbg.dprint("Weights saved!")
 
     def test(self):
