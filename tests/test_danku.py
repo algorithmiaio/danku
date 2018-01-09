@@ -64,7 +64,7 @@ def test_danku_init(web3, chain):
 
     dbg.dprint("Data group indexes: " + str(dgi))
 
-    init2_tx = danku.transact().init2(dgi)
+    init2_tx = danku.transact().init2()
     chain.wait.for_receipt(init2_tx)
 
     # Can only access one element of a public array at a time
