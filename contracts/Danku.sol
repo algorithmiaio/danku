@@ -106,7 +106,7 @@ contract Danku {
     model_accuracy_criteria = accuracy_criteria;
   }
 
-  function init2(uint[] index_array) external {
+  function init2() external {
     // Make sure contract is not terminated
     assert(contract_terminated == false);
     // Only allow calling it once, in order
@@ -116,6 +116,10 @@ contract Danku {
     if (block.number <= init1_block_height+5 && block.number > init1_block_height) {
       // TODO: Also make sure it's being called 1 block after init1()
       // Randomly select indexes
+      uint[] memory index_array = new uint[](max_num_data_groups/partition_size);
+      for (uint i = 0; i < max_num_data_groups/partition_size; i++) {
+        index_array[i] = i;
+      }
       randomly_select_index(index_array);
       init_level = 2;
     } else {
