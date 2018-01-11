@@ -30,13 +30,13 @@ contract Danku {
 
   address public organizer;
   // Keep track of the best model
-  uint best_submission_index;
+  uint public best_submission_index;
   // Keep track of best model accuracy
-  int256 best_submission_accuracy = 0;
+  int256 public best_submission_accuracy = 0;
   // The model accuracy criteria
-  int256 model_accuracy_criteria;
+  int256 public model_accuracy_criteria;
   // Use test data if provided
-  bool use_test_data = false;
+  bool public use_test_data = false;
   // Each partition is 5% of the total dataset size
   uint constant partition_size = 5;
   // Data points are made up of x and y coordinates and the prediction
@@ -302,21 +302,42 @@ contract Danku {
     int256 true_prediction = 0;
     int256 false_prediction = 0;
     int256 accuracy = 0;
+    uint pred_size = 0;
+    bool one_hot; // one-hot encoding if prediction size is 1 but model output size is 2
+    if ((prediction_size + 1) == sub.num_neurons_output_layer) {
+      one_hot = true;
+      pred_size = sub.num_neurons_output_layer;
+    } else {
+      one_hot = false;
+      pred_size = prediction_size;
+    }
+    int[] memory prediction = new int[](pred_size);
+    int[] memory ground_truth = new int[](pred_size);
     for (uint i = 0; i < data.length; i++) {
-      int[] memory prediction;
-      int[] memory ground_truth;
       // Get ground truth
-      for (uint j = 0; j < data[i].length; j++) {
+      for (uint j = datapoint_size-prediction_size; j < data[i].length; j++) {
+        uint d_index = j - datapoint_size + prediction_size;
         // Only get prediction values
-        if (j > datapoint_size - prediction_size - 1) {
-          ground_truth[ground_truth.length] = data[i][j];
+        if (one_hot == true) {
+          if (data[i][j] == 0) {
+            ground_truth[d_index] = 1;
+            ground_truth[d_index + 1] = 0;
+          } else if (data[i][j] == 1) {
+            ground_truth[d_index] = 0;
+            ground_truth[d_index + 1] = 1;
+          } else {
+            // One-hot encoding for more than 2 classes is not supported
+            require(false);
+          }
+        } else {
+          ground_truth[d_index] = data[i][j];
         }
       }
       // Get prediction
       prediction = forward_pass(data[i], sub);
       // Get error for the output layer
       for (uint k = 0; k < ground_truth.length; k++) {
-        if (ground_truth[k] - prediction[k] == 0) {
+        if (ground_truth[k] == prediction[k]) {
           true_prediction += 1;
         } else {
           false_prediction += 1;
