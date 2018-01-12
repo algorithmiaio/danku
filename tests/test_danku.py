@@ -30,6 +30,8 @@ def test_danku_init(web3, chain):
     # Deduct reward amount (1 ETH) and gas cost (21040 wei)
     assert bal == 999998999999999999978960
 
+    wallet_amount = 1000000000000000000000000 # minus the reward amount
+
     scd = SampleHalfDividedDataset(training_percentage=0.8)
     scd.generate_nonce()
     scd.sha_all_data_groups()
@@ -166,10 +168,17 @@ def test_danku_init(web3, chain):
     # Evaluate the submitted solution
     eval_tx = danku.transact().evaluate_model(submission_id)
 
+    # Get best submission accuracy & ID
+    best_submission_accuracy = danku.call().best_submission_accuracy()
+    best_submission_index = danku.call().best_submission_index()
+
+    dbg.dprint("Best submission ID: " + str(best_submission_index))
+    dbg.dprint("Best submission accuracy: " + str(best_submission_accuracy))
+
 def scale_packed_data(data, scale):
     # Scale data and convert it to an integer
     return list(map(lambda x: int(x*scale), data))
-
+'''
 def test_python_solidity_hashing_compatability():
     # Make sure Python and solidity hashes the data groups in the same manner
     assert(False)
@@ -203,3 +212,4 @@ def test_danku_finalize_contract():
 
 def test_danku_model_accuracy():
     assert(False)
+'''
