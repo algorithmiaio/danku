@@ -302,17 +302,18 @@ contract Danku {
     int256 true_prediction = 0;
     int256 false_prediction = 0;
     int256 accuracy = 0;
-    uint pred_size = 0;
     bool one_hot; // one-hot encoding if prediction size is 1 but model output size is 2
+    int[] memory prediction;
+    int[] memory ground_truth;
     if ((prediction_size + 1) == sub.num_neurons_output_layer) {
       one_hot = true;
-      pred_size = sub.num_neurons_output_layer;
+      prediction = new int[](sub.num_neurons_output_layer);
+      ground_truth = new int[](sub.num_neurons_output_layer);
     } else {
       one_hot = false;
-      pred_size = prediction_size;
+      prediction = new int[](prediction_size);
+      ground_truth = new int[](prediction_size);
     }
-    int[] memory prediction = new int[](pred_size);
-    int[] memory ground_truth = new int[](pred_size);
     for (uint i = 0; i < data.length; i++) {
       // Get ground truth
       for (uint j = datapoint_size-prediction_size; j < data[i].length; j++) {
