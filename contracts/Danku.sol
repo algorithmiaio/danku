@@ -298,10 +298,9 @@ contract Danku {
     assert(init_level == 3);
     // Leave function public for offline error calculation
     // Get's the sum error for the model
-    Submission memory sub = submission_queue[submission_index];
+    Submission sub = submission_queue[submission_index];
     int256 true_prediction = 0;
     int256 false_prediction = 0;
-    int256 accuracy = 0;
     bool one_hot; // one-hot encoding if prediction size is 1 but model output size is 2
     int[] memory prediction;
     int[] memory ground_truth;
@@ -335,7 +334,7 @@ contract Danku {
         }
       }
       // Get prediction
-      prediction = forward_pass(data[i], sub);
+      prediction = get_prediction(sub, data[i]);
       // Get error for the output layer
       for (uint k = 0; k < ground_truth.length; k++) {
         if (ground_truth[k] == prediction[k]) {
@@ -344,11 +343,10 @@ contract Danku {
           false_prediction += 1;
         }
       }
-      // We multipl by 10000 to get up to 2 decimal point precision while
-      // calculating the accuracy
-      accuracy = (true_prediction * 10000) / (true_prediction + false_prediction);
     }
-    return accuracy;
+    // We multipl by 10000 to get up to 2 decimal point precision while
+    // calculating the accuracy
+    return (true_prediction * 10000) / (true_prediction + false_prediction);
   }
 
   function get_train_data_length() public view returns(uint256) {
@@ -471,37 +469,70 @@ contract Danku {
     }
   }
 
-  function get_layers(Submission sub) private pure returns (NeuralLayer[]) {
-    uint256[] memory nn_hl = sub.num_neurons_hidden_layer;
-    NeuralLayer[] memory layers;
-    uint256 layer_index = 0;
-
-    NeuralLayer memory input_layer;
-    input_layer.layer_type = "input_layer";
-    layers[layer_index] = input_layer;
-    layer_index += 1;
-    for (uint i = 0; i < nn_hl.length; i++) {
-      NeuralLayer memory hidden_layer;
-      hidden_layer.layer_type = "hidden_layer";
-      layers[layer_index] = hidden_layer;
-      layer_index += 1;
-    }
-    NeuralLayer memory output_layer;
-    input_layer.layer_type = "output_layer";
-    layers[layer_index] = output_layer;
-    layer_index += 1;
-    return layers;
+  function get_layer(uint nn) private returns (int256[]) {
+    int256[] memory input_layer = new int256[](nn);
+    return input_layer;
   }
 
-  function forward_pass(int[datapoint_size] data_point, Submission sub) private pure returns (int256[]) {
-    NeuralLayer[] memory layers = get_layers(sub);
-    // load inputs from input layer
-    for (uint input_i = 0; input_i < sub.num_neurons_input_layer; input_i++) {
-      layers[0].neurons[input_i] = data_point[input_i];
+  function get_hidden_layers(uint[] l_nn) private returns (int256[]) {
+    uint total_nn = 0;
+    // Skip first and last layer since they're not hidden layers
+    for (uint i = 1; i < l_nn.length-1; i++) {
+      total_nn += l_nn[i];
     }
+    int256[] memory hidden_layers = new int256[](total_nn);
+    return hidden_layers;
+  }
+
+  function access_hidden_layer(int256[] hls, uint[] l_nn, uint index) returns (int256[]) {
+    // TODO: Bug is here, doesn't work for between last hidden and output layer
+    // Returns the hidden layer from the hidden layers array
+    int256[] memory hidden_layer = new int256[](l_nn[index+1]);
+    uint hidden_layer_index = 0;
+    uint start = 0;
+    uint end = 0;
+    for (uint i = 0; i < index; i++) {
+      start += l_nn[i+1];
+    }
+    for (uint j = 0; j < (index + 1); j++) {
+      end += l_nn[j+1];
+    }
+    for (uint h_i = start; h_i < end; h_i++) {
+      hidden_layer[hidden_layer_index] = hls[h_i];
+      hidden_layer_index += 1;
+    }
+    return hidden_layer;
+  }
+
+  function get_prediction(Submission sub, int[datapoint_size] data_point) private returns(int256[]) {
+    uint[] memory l_nn = new uint[](sub.num_neurons_hidden_layer.length + 2);
+    l_nn[0] = sub.num_neurons_input_layer;
+    for (uint i = 0; i < sub.num_neurons_hidden_layer.length; i++) {
+      l_nn[i+1] = sub.num_neurons_hidden_layer[i];
+    }
+    l_nn[sub.num_neurons_hidden_layer.length+1] = sub.num_neurons_output_layer;
+    return forward_pass(data_point, sub.weights, l_nn);
+  }
+
+  function forward_pass(int[datapoint_size] data_point, int256[] weights, uint[] l_nn) private returns (int256[]) {
+    // Initialize neuron arrays
+    int256[] memory input_layer = get_layer(l_nn[0]);
+    int256[] memory hidden_layers = get_hidden_layers(l_nn);
+    int256[] memory output_layer = get_layer(l_nn[l_nn.length-1]);
+
+    // load inputs from input layer
+    for (uint input_i = 0; input_i < l_nn[0]; input_i++) {
+      input_layer[input_i] = data_point[input_i];
+    }
+    return forward_pass2(l_nn, input_layer, hidden_layers, output_layer);
+    /* NeuralLayer[] memory layers = get_layers(il_nn, ol_nn, hl_nn); */
+    // load inputs from input layer
+    /* for (uint input_i = 0; input_i < il_nn; input_i++) {
+      layers[0].neurons[input_i] = data_point[input_i];
+    } */
     // evaluate the neurons in following layers
     // skip input layer by starting at 1
-    uint weight_index;
+    /* uint weight_index;
     for (uint layer_i = 1; layer_i < layers.length-1; layer_i++) {
       NeuralLayer memory current_layer = layers[layer_i];
       NeuralLayer memory previous_layer = layers[layer_i-1];
@@ -509,13 +540,42 @@ contract Danku {
         int total = 0;
         for (uint prev_layer_neuron_i = 0; prev_layer_neuron_i < previous_layer.neurons.length; prev_layer_neuron_i++) {
           weight_index = layer_i * (layers.length-1) + layer_neuron_i * current_layer.neurons.length + prev_layer_neuron_i * previous_layer.neurons.length;
-          total += previous_layer.neurons[prev_layer_neuron_i] * sub.weights[weight_index];
+          total += previous_layer.neurons[prev_layer_neuron_i] * weights[weight_index];
         }
         layers[layer_i].neurons[layer_neuron_i] = relu_activation(total);
       }
-    }
+    } */
     // Return the output layer neurons
-    return layers[layers.length-1].neurons;
+    /* return layers[layers.length-1].neurons; */
+  }
+
+  function forward_pass2(uint[] l_nn, int256[] input_layer, int256[] hidden_layers, int256[] output_layer) returns (int256[]) {
+    uint weight_index = 0;
+    for (uint layer_i = 0; layer_i < (hidden_layers.length+1); layer_i++) {
+      int256[] memory current_layer;
+      int256[] memory prev_layer;
+      // If between input and first hidden layer
+      if (layer_i == 0) {
+        current_layer = access_hidden_layer(hidden_layers, l_nn, layer_i);
+        prev_layer = input_layer;
+      // If between output and last hidden layer
+      } else if (layer_i == (l_nn.length-2)) {
+        current_layer = output_layer;
+        prev_layer = access_hidden_layer(hidden_layers, l_nn, layer_i);
+      // If between hidden layers
+      } else {
+        current_layer = access_hidden_layer(hidden_layers, l_nn, layer_i);
+        prev_layer = access_hidden_layer(hidden_layers, l_nn, layer_i-1);
+      }
+      for (uint layer_neuron_i = 0; layer_neuron_i < current_layer.length; layer_neuron_i++) {
+        int total = 0;
+        for (uint prev_layer_neuron_i = 0; prev_layer_neuron_i < prev_layer.length; prev_layer_neuron_i++) {
+          weight_index += 1;
+          total += 1;
+        }
+      }
+    }
+    return output_layer;
   }
 
   // Fallback function for sending ether to this contract
