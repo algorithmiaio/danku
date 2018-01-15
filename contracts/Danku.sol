@@ -524,7 +524,7 @@ contract Danku {
     for (uint input_i = 0; input_i < l_nn[0]; input_i++) {
       input_layer[input_i] = data_point[input_i];
     }
-    return forward_pass2(l_nn, input_layer, hidden_layers, output_layer);
+    return forward_pass2(l_nn, input_layer, hidden_layers, output_layer, weights);
     /* NeuralLayer[] memory layers = get_layers(il_nn, ol_nn, hl_nn); */
     // load inputs from input layer
     /* for (uint input_i = 0; input_i < il_nn; input_i++) {
@@ -549,7 +549,7 @@ contract Danku {
     /* return layers[layers.length-1].neurons; */
   }
 
-  function forward_pass2(uint[] l_nn, int256[] input_layer, int256[] hidden_layers, int256[] output_layer) returns (int256[]) {
+  function forward_pass2(uint[] l_nn, int256[] input_layer, int256[] hidden_layers, int256[] output_layer, int256[] weights) returns (int256[]) {
     uint weight_index = 0;
     for (uint layer_i = 0; layer_i < (hidden_layers.length+1); layer_i++) {
       int256[] memory current_layer;
