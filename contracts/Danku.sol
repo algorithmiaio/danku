@@ -561,7 +561,7 @@ contract Danku {
       // If between output and last hidden layer
       } else if (layer_i == (l_nn.length-2)) {
         current_layer = output_layer;
-        prev_layer = access_hidden_layer(hidden_layers, l_nn, layer_i);
+        prev_layer = access_hidden_layer(hidden_layers, l_nn, (layer_i-1));
       // If between hidden layers
       } else {
         current_layer = access_hidden_layer(hidden_layers, l_nn, layer_i);
