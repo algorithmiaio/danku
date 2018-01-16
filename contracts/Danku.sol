@@ -551,6 +551,7 @@ contract Danku {
 
   function forward_pass2(uint[] l_nn, int256[] input_layer, int256[] hidden_layers, int256[] output_layer, int256[] weights) returns (int256[]) {
     uint weight_index = 0;
+    uint hidden_layer_index = 0;
     for (uint layer_i = 0; layer_i < (l_nn.length-1); layer_i++) {
       int256[] memory current_layer;
       int256[] memory prev_layer;
@@ -570,9 +571,16 @@ contract Danku {
       for (uint layer_neuron_i = 0; layer_neuron_i < current_layer.length; layer_neuron_i++) {
         int total = 0;
         for (uint prev_layer_neuron_i = 0; prev_layer_neuron_i < prev_layer.length; prev_layer_neuron_i++) {
-          total += prev_layer[prev_layer_neuron_i] * weights[weight_index];
+          total += (prev_layer[prev_layer_neuron_i] * weights[weight_index]) / 10000; // Divide by 10,000 to scale down
           weight_index++;
         }
+        // If between output and last hidden layer
+        if (layer_i == (l_nn.length-2)) {
+            output_layer[layer_neuron_i] = relu_activation(total);
+        } else {
+            hidden_layers[hidden_layer_index] = relu_activation(total);
+        }
+        hidden_layer_index++;
       }
     }
     return output_layer;
