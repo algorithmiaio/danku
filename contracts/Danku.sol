@@ -570,8 +570,8 @@ contract Danku {
       for (uint layer_neuron_i = 0; layer_neuron_i < current_layer.length; layer_neuron_i++) {
         int total = 0;
         for (uint prev_layer_neuron_i = 0; prev_layer_neuron_i < prev_layer.length; prev_layer_neuron_i++) {
-          weight_index += 1;
-          total += 1;
+          total += prev_layer[prev_layer_neuron_i] * weights[weight_index];
+          weight_index++;
         }
       }
     }
