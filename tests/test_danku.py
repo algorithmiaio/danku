@@ -142,12 +142,12 @@ def test_danku_init(web3, chain):
 
     # Submit the solution to the contract
     submit_tx = danku.transact().submit_model(solver_account, il_nn, ol_nn, hl_nn,\
-        int_packed_trained_weights)
+        int_packed_trained_weights, int_packed_trained_biases)
     chain.wait.for_receipt(submit_tx)
 
     # Get submission index ID
     submission_id = danku.call().get_submission_id(solver_account, il_nn,\
-        ol_nn, hl_nn, int_packed_trained_weights)
+        ol_nn, hl_nn, int_packed_trained_weights, int_packed_trained_biases)
     dbg.dprint("Submission ID: " + str(submission_id))
 
     # Wait until the submission period ends

@@ -21,6 +21,7 @@ contract Danku {
       // weights[l_i x l_n_i x pl_n_i]
       // Also number of layers in weights is layers.length-1
       int256[] weights;
+      int256[] biases;
   }
   struct NeuralLayer {
     int256[] neurons;
@@ -159,7 +160,8 @@ contract Danku {
     uint num_neurons_input_layer,
     uint num_neurons_output_layer,
     uint[] num_neurons_hidden_layer,
-    int[] weights) public {
+    int[] weights,
+    int256[] biases) public {
       // Make sure contract is not terminated
       assert(contract_terminated == false);
       // Make sure it's not the initialization stage anymore
@@ -180,7 +182,8 @@ contract Danku {
         num_neurons_input_layer,
         num_neurons_output_layer,
         num_neurons_hidden_layer,
-        weights));
+        weights,
+        biases));
   }
 
   function get_submission_id(
@@ -189,7 +192,8 @@ contract Danku {
     uint num_neurons_input_layer,
     uint num_neurons_output_layer,
     uint[] num_neurons_hidden_layer,
-    int[] weights) public view returns (uint) {
+    int[] weights,
+    int256[] biases) public view returns (uint) {
       // Iterate over submission queue to get submission index ID
       for (uint i = 0; i < submission_queue.length; i++) {
         if (submission_queue[i].payment_address != paymentAddress) {
@@ -210,6 +214,11 @@ contract Danku {
             if (submission_queue[i].weights[k] != weights[k]) {
               continue;
             }
+        }
+        for (uint l = 0; l < biases.length; l++) {
+          if (submission_queue[i].biases[l] != biases[l]) {
+            continue;
+          }
         }
         // If everything matches, return the submission index
         return i;
