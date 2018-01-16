@@ -561,8 +561,9 @@ contract Danku {
   }
 
   function forward_pass2(uint[] l_nn, int256[] input_layer, int256[] hidden_layers, int256[] output_layer, int256[] weights, int256[] biases) returns (int256[]) {
-    uint weight_index = 0;
-    uint hidden_layer_index = 0;
+    // index_counter[0] is weight index
+    // index_counter[1] is hidden_layer_index
+    uint[] memory index_counter = new uint[](2);
     for (uint layer_i = 0; layer_i < (l_nn.length-1); layer_i++) {
       int256[] memory current_layer;
       int256[] memory prev_layer;
@@ -582,16 +583,16 @@ contract Danku {
       for (uint layer_neuron_i = 0; layer_neuron_i < current_layer.length; layer_neuron_i++) {
         int total = 0;
         for (uint prev_layer_neuron_i = 0; prev_layer_neuron_i < prev_layer.length; prev_layer_neuron_i++) {
-          total += (prev_layer[prev_layer_neuron_i] * weights[weight_index]) / int_precision; // Divide by int_precision to scale down
-          weight_index++;
+          total += (prev_layer[prev_layer_neuron_i] * weights[index_counter[0]]) / int_precision; // Divide by int_precision to scale down
+          index_counter[0]++;
         }
         // If between output and last hidden layer
         if (layer_i == (l_nn.length-2)) {
             output_layer[layer_neuron_i] = relu_activation(total);
         } else {
-            hidden_layers[hidden_layer_index] = relu_activation(total);
+            hidden_layers[index_counter[1]] = relu_activation(total);
         }
-        hidden_layer_index++;
+        index_counter[1]++;
       }
     }
     return output_layer;
