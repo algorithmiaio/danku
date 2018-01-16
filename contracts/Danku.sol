@@ -551,7 +551,7 @@ contract Danku {
 
   function forward_pass2(uint[] l_nn, int256[] input_layer, int256[] hidden_layers, int256[] output_layer, int256[] weights) returns (int256[]) {
     uint weight_index = 0;
-    for (uint layer_i = 0; layer_i < (hidden_layers.length+1); layer_i++) {
+    for (uint layer_i = 0; layer_i < (l_nn.length-1); layer_i++) {
       int256[] memory current_layer;
       int256[] memory prev_layer;
       // If between input and first hidden layer
