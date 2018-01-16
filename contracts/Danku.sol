@@ -77,6 +77,8 @@ contract Danku {
   uint256 test_dg_revealed = 0;
   Submission[] submission_queue;
   bool public contract_terminated = false;
+  // Integer precision for calculating float values for weights and biases
+  int constant int_precision = 10000;
 
   // Takes in array of hashed data points of the entire dataset,
   // submission and evaluation times
@@ -344,9 +346,9 @@ contract Danku {
         }
       }
     }
-    // We multipl by 10000 to get up to 2 decimal point precision while
+    // We multipl by int_precision to get up to x decimal point precision while
     // calculating the accuracy
-    return (true_prediction * 10000) / (true_prediction + false_prediction);
+    return (true_prediction * int_precision) / (true_prediction + false_prediction);
   }
 
   function get_train_data_length() public view returns(uint256) {
@@ -571,7 +573,7 @@ contract Danku {
       for (uint layer_neuron_i = 0; layer_neuron_i < current_layer.length; layer_neuron_i++) {
         int total = 0;
         for (uint prev_layer_neuron_i = 0; prev_layer_neuron_i < prev_layer.length; prev_layer_neuron_i++) {
-          total += (prev_layer[prev_layer_neuron_i] * weights[weight_index]) / 10000; // Divide by 10,000 to scale down
+          total += (prev_layer[prev_layer_neuron_i] * weights[weight_index]) / int_precision; // Divide by int_precision to scale down
           weight_index++;
         }
         // If between output and last hidden layer
