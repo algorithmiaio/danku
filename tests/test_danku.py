@@ -110,7 +110,7 @@ def test_danku_init(web3, chain):
     dbg.dprint("Contract training data: " + str(contract_train_data))
 
     il_nn = 2
-    hl_nn = [1]
+    hl_nn = []
     ol_nn = 2
     # Train a neural network with contract data
     nn = NeuralNetwork(il_nn, hl_nn, ol_nn)
@@ -174,6 +174,21 @@ def test_danku_init(web3, chain):
 
     dbg.dprint("Best submission ID: " + str(best_submission_index))
     dbg.dprint("Best submission accuracy: " + str(best_submission_accuracy))
+
+    l_nn = [2, 2]
+    input_layer = test_data[:2]
+    hidden_layers = []
+    output_layer = [0, 0]
+    weights = int_packed_trained_weights
+    biases = int_packed_trained_biases
+    # Test forward
+    fwd_pass2 = danku.call().forward_pass2(l_nn, input_layer, hidden_layers, output_layer, weights, biases)
+
+    dbg.dprint("Test input: " + str(test_data[:2]))
+    dbg.dprint("Expected output: " + str(test_data[2]))
+    dbg.dprint("local nn prediction: " + str(nn.predict([test_data[:2]])))
+
+    dbg.dprint("forward_pass2: " + str(fwd_pass2))
 
 def scale_packed_data(data, scale):
     # Scale data and convert it to an integer
