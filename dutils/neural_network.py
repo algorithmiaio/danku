@@ -180,18 +180,26 @@ class NeuralNetwork():
             # Save the weights
             # Weights for hidden layers
             for l_i in range(len(self.hidden_layer_number_neurons)):
-                for l_ni in range(len(self.weights[l_i])):
-                    self.bias[l_i][l_ni] = self.tf_bias["b" + str(l_i+1)]\
-                        [l_ni].eval()
-                    for pl_ni in range(len(self.weights[l_i][l_ni])):
-                        self.weights[l_i][l_ni][pl_ni] =\
-                        self.tf_weights["h" + str(l_i+1)][pl_ni][l_ni].eval()
+                self.weights[l_i] = self.tf_weights["h" + str(l_i+1)].eval()
+                self.bias[l_i] = self.tf_bias["b" + str(l_i+1)].eval()
+                # for l_ni in range(len(self.weights[l_i])):
+                #     self.bias[l_i][l_ni] = self.tf_bias["b" + str(l_i+1)]\
+                #         [l_ni].eval()
+                #     for pl_ni in range(len(self.weights[l_i][l_ni])):
+                #         self.weights[l_i][l_ni][pl_ni] =\
+                #         self.tf_weights["h" + str(l_i+1)][pl_ni][l_ni].eval()
             # Weights for the last layer
-            for l_ni in range(len(self.weights[-1])):
-                self.bias[-1][l_ni] = self.tf_bias["out"][l_ni].eval()
-                for pl_ni in range(len(self.weights[-1][l_ni])):
-                    self.weights[-1][l_ni][pl_ni] = self.tf_weights["out"]\
-                        [pl_ni][l_ni].eval()
+            self.weights[-1] = self.tf_weights["out"].eval()
+            self.bias[-1] = self.tf_bias["out"].eval()
+            # for l_ni in range(len(self.weights[-1])):
+            #     self.bias[-1][l_ni] = self.tf_bias["out"][l_ni].eval()
+            #     dbg.dprint("l_ni: " + str(l_ni))
+            #     for pl_ni in range(len(self.weights[-1][l_ni])):
+            #         dbg.dprint("pl_ni: " + str(pl_ni))
+            #         dbg.dprint("before: " + str(self.tf_weights["out"][pl_ni][l_ni].eval()))
+            #         self.weights[-1][l_ni][pl_ni] = self.tf_weights["out"]\
+            #             [pl_ni][l_ni].eval()
+            #         dbg.dprint("after: " + str(self.tf_weights["out"][pl_ni][l_ni].eval()))
             dbg.dprint("Weights saved!")
 
     def test(self):
@@ -209,6 +217,10 @@ class NeuralNetwork():
                         feed_dict={self.x_vector: x_test_vector, self.y_vector: y_test_vector})))
             else:
                 raise Exception("Please provide testing data before running the test method.")
+    def predict(self, x_vector):
+        with tf.Session() as sess:
+            sess.run(self.tf_init)
+            return sess.run(self.tf_layers["out"], feed_dict={self.x_vector: x_vector})
     def load_train_data(self, train_data):
         # Validate dataset dimensions
         if(len(train_data[0]) == self.data_point_size):
