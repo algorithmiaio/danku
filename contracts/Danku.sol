@@ -583,9 +583,11 @@ contract Danku {
       for (uint layer_neuron_i = 0; layer_neuron_i < current_layer.length; layer_neuron_i++) {
         int total = 0;
         for (uint prev_layer_neuron_i = 0; prev_layer_neuron_i < prev_layer.length; prev_layer_neuron_i++) {
-          total += (prev_layer[prev_layer_neuron_i] * weights[index_counter[0]]) / int_precision; // Divide by int_precision to scale down
+          total += prev_layer[prev_layer_neuron_i] * weights[index_counter[0]];
           index_counter[0]++;
         }
+        total += biases[layer_i];
+        total = total / int_precision; // Divide by int_precision to scale down
         // If between output and last hidden layer
         if (layer_i == (l_nn.length-2)) {
             output_layer[layer_neuron_i] = relu_activation(total);
