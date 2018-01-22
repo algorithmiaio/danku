@@ -570,17 +570,22 @@ contract Danku {
       int256[] memory current_layer;
       int256[] memory prev_layer;
       // If between input and first hidden layer
-      if (layer_i == 0) {
-        current_layer = access_hidden_layer(hidden_layers, l_nn, layer_i);
-        prev_layer = input_layer;
-      // If between output and last hidden layer
-      } else if (layer_i == (l_nn.length-2)) {
-        current_layer = output_layer;
-        prev_layer = access_hidden_layer(hidden_layers, l_nn, (layer_i-1));
-      // If between hidden layers
+      if (hidden_layers.length != 0) {
+        if (layer_i == 0) {
+          current_layer = access_hidden_layer(hidden_layers, l_nn, layer_i);
+          prev_layer = input_layer;
+        // If between output and last hidden layer
+        } else if (layer_i == (l_nn.length-2)) {
+          current_layer = output_layer;
+          prev_layer = access_hidden_layer(hidden_layers, l_nn, (layer_i-1));
+        // If between hidden layers
+        } else {
+          current_layer = access_hidden_layer(hidden_layers, l_nn, layer_i);
+          prev_layer = access_hidden_layer(hidden_layers, l_nn, layer_i-1);
+        }
       } else {
-        current_layer = access_hidden_layer(hidden_layers, l_nn, layer_i);
-        prev_layer = access_hidden_layer(hidden_layers, l_nn, layer_i-1);
+        current_layer = output_layer;
+        prev_layer = input_layer;
       }
       for (uint layer_neuron_i = 0; layer_neuron_i < current_layer.length; layer_neuron_i++) {
         int total = 0;
