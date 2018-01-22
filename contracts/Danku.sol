@@ -311,7 +311,7 @@ contract Danku {
     assert(init_level == 3);
     // Leave function public for offline error calculation
     // Get's the sum error for the model
-    Submission sub = submission_queue[submission_index];
+    Submission memory sub = submission_queue[submission_index];
     int256 true_prediction = 0;
     int256 false_prediction = 0;
     bool one_hot; // one-hot encoding if prediction size is 1 but model output size is 2
