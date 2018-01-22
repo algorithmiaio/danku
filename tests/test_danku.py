@@ -175,10 +175,10 @@ def test_danku_init(web3, chain):
     dbg.dprint("Best submission ID: " + str(best_submission_index))
     dbg.dprint("Best submission accuracy: " + str(best_submission_accuracy))
 
-    l_nn = [2, 2]
+    l_nn = [il_nn] + hl_nn + [ol_nn]
     input_layer = test_data[:2]
-    hidden_layers = []
-    output_layer = [0, 0]
+    hidden_layers = [0] * sum(hl_nn)
+    output_layer = [0] * ol_nn
     weights = int_packed_trained_weights
     biases = int_packed_trained_biases
     # Test forward
