@@ -5,7 +5,7 @@ import dutils.debug as dbg
 from numpy import array as narray
 
 class NeuralNetwork():
-    def __init__(self, il_nn, hl_nn, ol_nn, lr=0.1, ns=500, bs=5, ds=50):
+    def __init__(self, il_nn, hl_nn, ol_nn, lr=0.1, ns=5000, bs=5, ds=500):
         # Making Python type-safe!
         if not isinstance(lr, int) and not isinstance(lr, float):
             raise Exception("Learning rate must be an integer or float.")
