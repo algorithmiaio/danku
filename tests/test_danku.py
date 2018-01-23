@@ -176,7 +176,7 @@ def test_danku_init(web3, chain):
     dbg.dprint("Best submission accuracy: " + str(best_submission_accuracy))
 
     l_nn = [il_nn] + hl_nn + [ol_nn]
-    input_layer = test_data[:2]
+    input_layer = train_data[:2]
     hidden_layers = [0] * sum(hl_nn)
     output_layer = [0] * ol_nn
     weights = int_packed_trained_weights
@@ -184,9 +184,9 @@ def test_danku_init(web3, chain):
     # Test forward
     fwd_pass2 = danku.call().forward_pass2(l_nn, input_layer, hidden_layers, output_layer, weights, biases)
 
-    dbg.dprint("Test input: " + str(test_data[:2]))
-    dbg.dprint("Expected output: " + str(test_data[2]))
-    dbg.dprint("local nn prediction: " + str(nn.predict([test_data[:2]])))
+    dbg.dprint("Test input: " + str(train_data[:2]))
+    dbg.dprint("Expected output: " + str(train_data[2]))
+    dbg.dprint("local nn prediction: " + str(nn.predict([train_data[:2]])))
 
     dbg.dprint("forward_pass2: " + str(fwd_pass2))
 
