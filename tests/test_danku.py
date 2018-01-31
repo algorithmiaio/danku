@@ -49,7 +49,8 @@ def test_single_solver_finalized_contract(web3, chain):
     # Start at a random block between 0-1000
     chain.wait.for_block(randbelow(1000))
     dbg.dprint("Starting block: " + str(web3.eth.blockNumber))
-    init1_tx = danku.transact().init1(scd.hashed_data_group, accuracy_criteria)
+    init1_tx = danku.transact().init1(scd.hashed_data_group, accuracy_criteria,
+        offer_account)
     chain.wait.for_receipt(init1_tx)
     init1_block_number = web3.eth.blockNumber
     dbg.dprint("Init1 block: " + str(init1_block_number))

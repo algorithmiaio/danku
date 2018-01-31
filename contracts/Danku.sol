@@ -83,12 +83,12 @@ contract Danku {
 
   // Takes in array of hashed data points of the entire dataset,
   // submission and evaluation times
-  function init1(bytes32[max_num_data_groups/partition_size] _hashed_data_groups, int accuracy_criteria) external {
+  function init1(bytes32[max_num_data_groups/partition_size] _hashed_data_groups, int accuracy_criteria, address organizer_refund_address) external {
     // Make sure contract is not terminated
     assert(contract_terminated == false);
     // Make sure it's called in order
     assert(init_level == 0);
-    organizer = msg.sender;
+    organizer = organizer_refund_address;
     init_level = 1;
     init1_block_height = block.number;
 
