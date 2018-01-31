@@ -62,11 +62,11 @@ contract Danku {
   int256[datapoint_size][] public test_data;
   bytes32 partition_seed;
   // Deadline for submitting solutions in terms of block size
-  uint public submission_stage_block_size;
+  uint public submission_stage_block_size = 5; // 1 minute timeframe
   // Deadline for revealing the testing dataset
-  uint public reveal_test_data_groups_block_size;
+  uint public reveal_test_data_groups_block_size = 5; // 1 minute timeframe
   // Deadline for evaluating the submissions
-  uint public evaluation_stage_block_size;
+  uint public evaluation_stage_block_size = 5; // 1 minute timeframe
   uint init1_block_height;
   uint init3_block_height;
   uint init_level = 0;
@@ -83,7 +83,7 @@ contract Danku {
 
   // Takes in array of hashed data points of the entire dataset,
   // submission and evaluation times
-  function init1(bytes32[max_num_data_groups/partition_size] _hashed_data_groups, int accuracy_criteria, uint submission_t, uint evaluation_t, uint test_reveal_t) external {
+  function init1(bytes32[max_num_data_groups/partition_size] _hashed_data_groups, int accuracy_criteria) external {
     // Make sure contract is not terminated
     assert(contract_terminated == false);
     // Make sure it's called in order
@@ -95,17 +95,9 @@ contract Danku {
     // Make sure there are in total 20 hashed data groups
     assert(_hashed_data_groups.length == max_num_data_groups/partition_size);
     hashed_data_groups = _hashed_data_groups;
-    // Make sure submission, evaluation and test reaveal times are set to
-    // at least 1 block
-    assert(submission_t > 0);
-    assert(evaluation_t > 0);
-    assert(test_reveal_t > 0);
     // Accuracy criteria example: 85.9% => 8,590
     // 100 % => 10,000
     assert(accuracy_criteria > 0);
-    submission_stage_block_size = submission_t;
-    evaluation_stage_block_size = evaluation_t;
-    reveal_test_data_groups_block_size = test_reveal_t;
     model_accuracy_criteria = accuracy_criteria;
   }
 

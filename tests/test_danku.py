@@ -5,10 +5,7 @@ from secrets import randbelow
 
 def test_danku_init(web3, chain):
     _hashed_data_groups = []
-    accuracy_criteria = 9059 # 90.59%
-    submission_t = 5 # 1 minute for submission
-    evaluation_t = 5 # 1 minute for evaluation
-    test_reveal_t = 5 # 1 minute for revealing testing dataset
+    accuracy_criteria = 6059 # 60.59%
 
     w_scale = 1000 # Scale up weights by 1000x
     b_scale = 1000 # Scale up biases by 1000x
@@ -48,11 +45,14 @@ def test_danku_init(web3, chain):
     # Start at a random block between 0-1000
     chain.wait.for_block(randbelow(1000))
     dbg.dprint("Starting block: " + str(web3.eth.blockNumber))
-    init1_tx = danku.transact().init1(scd.hashed_data_group, accuracy_criteria,\
-        submission_t, evaluation_t, test_reveal_t)
+    init1_tx = danku.transact().init1(scd.hashed_data_group, accuracy_criteria)
     chain.wait.for_receipt(init1_tx)
     init1_block_number = web3.eth.blockNumber
     dbg.dprint("Init1 block: " + str(init1_block_number))
+
+    submission_t = danku.call().submission_stage_block_size() # get submission timeframe
+    evaluation_t = danku.call().evaluation_stage_block_size() # get evaluation timeframe
+    test_reveal_t = danku.call().reveal_test_data_groups_block_size() # get revealing testing dataset timeframe
 
     # Initialization step 2
     # Get data group indexes
@@ -167,6 +167,23 @@ def test_danku_init(web3, chain):
 
     # Evaluate the submitted solution
     eval_tx = danku.transact().evaluate_model(submission_id)
+
+    # Wait until the evaluation period ends
+    chain.wait.for_block(init3_block_number + submission_t + test_reveal_t + evaluation_t)
+
+    bal2 = web3.eth.getBalance(offer_account)
+
+    # Finalize the contract
+    final_tx = danku.transact().finalize_contract()
+
+    contract_finalized = danku.call().contract_terminated()
+
+    dbg.dprint("Contract finalized: " + str(contract_finalized))
+
+    bal = web3.eth.getBalance(solver_account)
+
+    # Verify that the solver account received the reward amount
+    assert bal == 1000001000000000000000000
 
     # Get best submission accuracy & ID
     best_submission_accuracy = danku.call().best_submission_accuracy()
