@@ -3,7 +3,7 @@ from dutils.neural_network import NeuralNetwork
 import dutils.debug as dbg
 from secrets import randbelow
 
-def test_danku_init(web3, chain):
+def test_single_solver_finalized_contract(web3, chain):
     _hashed_data_groups = []
     accuracy_criteria = 6059 # 60.59%
 
@@ -180,11 +180,6 @@ def test_danku_init(web3, chain):
 
     dbg.dprint("Contract finalized: " + str(contract_finalized))
 
-    bal = web3.eth.getBalance(solver_account)
-
-    # Verify that the solver account received the reward amount
-    assert bal == 1000001000000000000000000
-
     # Get best submission accuracy & ID
     best_submission_accuracy = danku.call().best_submission_accuracy()
     best_submission_index = danku.call().best_submission_index()
@@ -206,6 +201,11 @@ def test_danku_init(web3, chain):
     dbg.dprint("local nn prediction: " + str(nn.predict([train_data[:2]])))
 
     dbg.dprint("forward_pass2: " + str(fwd_pass2))
+
+    bal = web3.eth.getBalance(solver_account)
+
+    # Verify that the solver account received the reward amount
+    assert bal == 1000001000000000000000000
 
 def scale_packed_data(data, scale):
     # Scale data and convert it to an integer
