@@ -185,6 +185,8 @@ def test_single_solver_finalized_contract(web3, chain):
 
     dbg.dprint("Contract finalized: " + str(contract_finalized))
 
+    assert contract_finalized == True
+
     # Get best submission accuracy & ID
     best_submission_accuracy = danku.call().best_submission_accuracy()
     best_submission_index = danku.call().best_submission_index()
@@ -396,6 +398,8 @@ def test_single_solver_refunded_contract(web3, chain):
     contract_finalized = danku.call().contract_terminated()
 
     dbg.dprint("Contract finalized: " + str(contract_finalized))
+
+    assert contract_finalized == True
 
     # Get best submission accuracy & ID
     best_submission_accuracy = danku.call().best_submission_accuracy()
