@@ -207,6 +207,11 @@ def test_single_solver_finalized_contract(web3, chain):
     # Verify that the solver account received the reward amount
     assert bal == 1000001000000000000000000
 
+    bal = web3.eth.getBalance(offer_account)
+
+    # Verify the offer account balance
+    assert bal == 999998999999999999978960
+
 def scale_packed_data(data, scale):
     # Scale data and convert it to an integer
     return list(map(lambda x: int(x*scale), data))
