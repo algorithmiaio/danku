@@ -538,28 +538,6 @@ contract Danku {
       input_layer[input_i] = data_point[input_i];
     }
     return forward_pass2(l_nn, input_layer, hidden_layers, output_layer, weights, biases);
-    /* NeuralLayer[] memory layers = get_layers(il_nn, ol_nn, hl_nn); */
-    // load inputs from input layer
-    /* for (uint input_i = 0; input_i < il_nn; input_i++) {
-      layers[0].neurons[input_i] = data_point[input_i];
-    } */
-    // evaluate the neurons in following layers
-    // skip input layer by starting at 1
-    /* uint weight_index;
-    for (uint layer_i = 1; layer_i < layers.length-1; layer_i++) {
-      NeuralLayer memory current_layer = layers[layer_i];
-      NeuralLayer memory previous_layer = layers[layer_i-1];
-      for (uint layer_neuron_i = 0; layer_neuron_i < current_layer.neurons.length; layer_neuron_i++) {
-        int total = 0;
-        for (uint prev_layer_neuron_i = 0; prev_layer_neuron_i < previous_layer.neurons.length; prev_layer_neuron_i++) {
-          weight_index = layer_i * (layers.length-1) + layer_neuron_i * current_layer.neurons.length + prev_layer_neuron_i * previous_layer.neurons.length;
-          total += previous_layer.neurons[prev_layer_neuron_i] * weights[weight_index];
-        }
-        layers[layer_i].neurons[layer_neuron_i] = relu_activation(total);
-      }
-    } */
-    // Return the output layer neurons
-    /* return layers[layers.length-1].neurons; */
   }
 
   function forward_pass2(uint[] l_nn, int256[] input_layer, int256[] hidden_layers, int256[] output_layer, int256[] weights, int256[] biases) returns (int256[]) {
