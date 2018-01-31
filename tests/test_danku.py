@@ -3,6 +3,10 @@ from dutils.neural_network import NeuralNetwork
 import dutils.debug as dbg
 from secrets import randbelow
 
+def scale_packed_data(data, scale):
+    # Scale data and convert it to an integer
+    return list(map(lambda x: int(x*scale), data))
+
 def test_single_solver_finalized_contract(web3, chain):
     _hashed_data_groups = []
     accuracy_criteria = 5000 # 50.00%
@@ -212,9 +216,6 @@ def test_single_solver_finalized_contract(web3, chain):
     # Verify the offer account balance
     assert bal == 999998999999999999978960
 
-def scale_packed_data(data, scale):
-    # Scale data and convert it to an integer
-    return list(map(lambda x: int(x*scale), data))
 '''
 def test_python_solidity_hashing_compatability():
     # Make sure Python and solidity hashes the data groups in the same manner
