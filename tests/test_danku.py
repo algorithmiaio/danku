@@ -5,7 +5,7 @@ from secrets import randbelow
 
 def test_single_solver_finalized_contract(web3, chain):
     _hashed_data_groups = []
-    accuracy_criteria = 6059 # 60.59%
+    accuracy_criteria = 5000 # 50.00%
 
     w_scale = 1000 # Scale up weights by 1000x
     b_scale = 1000 # Scale up biases by 1000x
