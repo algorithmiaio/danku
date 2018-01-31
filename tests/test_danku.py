@@ -433,6 +433,214 @@ def test_single_solver_refunded_contract(web3, chain):
     # Verify the offer account got refunded the reward amount
     assert bal == 999999999999999999978960
 
+def test_successful_contract_cancellation(web3, chain):
+    _hashed_data_groups = []
+    accuracy_criteria = 9950 # 99.50%
+
+    w_scale = 1000 # Scale up weights by 1000x
+    b_scale = 1000 # Scale up biases by 1000x
+
+    dbg.dprint("Start amount bal[0]: " + str(web3.eth.getBalance(web3.eth.accounts[0])))
+
+    danku, _ = chain.provider.get_or_deploy_contract('Danku')
+
+    offer_account = web3.eth.accounts[1]
+    solver_account = web3.eth.accounts[2]
+
+    # Fund contract
+    web3.eth.sendTransaction({
+		'from': offer_account,
+		'to': danku.address,
+		'value': web3.toWei(1, "ether")
+	})
+
+    # Check that offerer was deducted
+    bal = web3.eth.getBalance(offer_account)
+    # Deduct reward amount (1 ETH) and gas cost (21040 wei)
+    assert bal == 999998999999999999978960
+
+    wallet_amount = 1000000000000000000000000 # minus the reward amount
+
+    scd = SampleHalfDividedDataset(training_percentage=0.8)
+    scd.generate_nonce()
+    scd.sha_all_data_groups()
+
+    dbg.dprint("All data groups: " + str(scd.data))
+    dbg.dprint("All nonces: " + str(scd.nonce))
+
+    # Initialization step 1
+    dbg.dprint("Hashed data groups: " + str(scd.hashed_data_group))
+    dbg.dprint("Hashed Hex data groups: " +
+        str(list(map(lambda x: "0x" + x.hex(), scd.hashed_data_group))))
+
+    # Keep track of all block numbers, so we can send them in time
+    # Start at a random block between 0-1000
+    chain.wait.for_block(randbelow(1000))
+    dbg.dprint("Starting block: " + str(web3.eth.blockNumber))
+    init1_tx = danku.transact().init1(scd.hashed_data_group, accuracy_criteria,
+        offer_account)
+    chain.wait.for_receipt(init1_tx)
+    init1_block_number = web3.eth.blockNumber
+    dbg.dprint("Init1 block: " + str(init1_block_number))
+
+    submission_t = danku.call().submission_stage_block_size() # get submission timeframe
+    evaluation_t = danku.call().evaluation_stage_block_size() # get evaluation timeframe
+    test_reveal_t = danku.call().reveal_test_data_groups_block_size() # get revealing testing dataset timeframe
+
+    # Initialization step 2
+    # Get data group indexes
+    chain.wait.for_block(init1_block_number + 1)
+    dgi = []
+    init2_block_number = web3.eth.blockNumber
+    dbg.dprint("Init2 block: " + str(init2_block_number))
+
+    for i in range(scd.num_data_groups):
+        dgi.append(i)
+
+    dbg.dprint("Data group indexes: " + str(dgi))
+
+    init2_tx = danku.transact().init2()
+    chain.wait.for_receipt(init2_tx)
+
+    # Cancel contract before init3()
+    danku.transact().cancel_contract()
+
+    contract_finalized = danku.call().contract_terminated()
+
+    assert contract_finalized == True
+
+    dbg.dprint("Contract finalized: " + str(contract_finalized))
+
+    bal = web3.eth.getBalance(solver_account)
+
+    # Verify that the solver account didn't receive the reward amount
+    assert bal == 1000000000000000000000000
+
+    bal = web3.eth.getBalance(offer_account)
+
+    # Verify the offer account got refunded the reward amount
+    assert bal == 999999999999999999978960
+
+def test_failed_contract_cancellation(web3, chain):
+    _hashed_data_groups = []
+    accuracy_criteria = 9950 # 99.50%
+
+    w_scale = 1000 # Scale up weights by 1000x
+    b_scale = 1000 # Scale up biases by 1000x
+
+    dbg.dprint("Start amount bal[0]: " + str(web3.eth.getBalance(web3.eth.accounts[0])))
+
+    danku, _ = chain.provider.get_or_deploy_contract('Danku')
+
+    offer_account = web3.eth.accounts[1]
+    solver_account = web3.eth.accounts[2]
+
+    # Fund contract
+    web3.eth.sendTransaction({
+		'from': offer_account,
+		'to': danku.address,
+		'value': web3.toWei(1, "ether")
+	})
+
+    # Check that offerer was deducted
+    bal = web3.eth.getBalance(offer_account)
+    # Deduct reward amount (1 ETH) and gas cost (21040 wei)
+    assert bal == 999998999999999999978960
+
+    wallet_amount = 1000000000000000000000000 # minus the reward amount
+
+    scd = SampleHalfDividedDataset(training_percentage=0.8)
+    scd.generate_nonce()
+    scd.sha_all_data_groups()
+
+    dbg.dprint("All data groups: " + str(scd.data))
+    dbg.dprint("All nonces: " + str(scd.nonce))
+
+    # Initialization step 1
+    dbg.dprint("Hashed data groups: " + str(scd.hashed_data_group))
+    dbg.dprint("Hashed Hex data groups: " +
+        str(list(map(lambda x: "0x" + x.hex(), scd.hashed_data_group))))
+
+    # Keep track of all block numbers, so we can send them in time
+    # Start at a random block between 0-1000
+    chain.wait.for_block(randbelow(1000))
+    dbg.dprint("Starting block: " + str(web3.eth.blockNumber))
+    init1_tx = danku.transact().init1(scd.hashed_data_group, accuracy_criteria,
+        offer_account)
+    chain.wait.for_receipt(init1_tx)
+    init1_block_number = web3.eth.blockNumber
+    dbg.dprint("Init1 block: " + str(init1_block_number))
+
+    submission_t = danku.call().submission_stage_block_size() # get submission timeframe
+    evaluation_t = danku.call().evaluation_stage_block_size() # get evaluation timeframe
+    test_reveal_t = danku.call().reveal_test_data_groups_block_size() # get revealing testing dataset timeframe
+
+    # Initialization step 2
+    # Get data group indexes
+    chain.wait.for_block(init1_block_number + 1)
+    dgi = []
+    init2_block_number = web3.eth.blockNumber
+    dbg.dprint("Init2 block: " + str(init2_block_number))
+
+    for i in range(scd.num_data_groups):
+        dgi.append(i)
+
+    dbg.dprint("Data group indexes: " + str(dgi))
+
+    init2_tx = danku.transact().init2()
+    chain.wait.for_receipt(init2_tx)
+
+    # Can only access one element of a public array at a time
+    training_partition = list(map(lambda x: danku.call().training_partition(x),\
+        range(scd.num_train_data_groups)))
+    testing_partition = list(map(lambda x: danku.call().testing_partition(x),\
+        range(scd.num_test_data_groups)))
+    # get partitions
+    dbg.dprint("Training partition: " + str(training_partition))
+    dbg.dprint("Testing partition: " + str(testing_partition))
+
+    scd.partition_dataset(training_partition, testing_partition)
+    # Initialization step 3
+    # Time to reveal the training dataset
+    training_nonces = []
+    training_data = []
+    for i in training_partition:
+        training_nonces.append(scd.nonce[i])
+    # Pack data into a 1-dimension array
+    # Since the data array is too large, we're going to send them in single data group chunks
+    train_data = scd.pack_data(scd.train_data)
+    test_data = scd.pack_data(scd.test_data)
+    init3_tx = []
+    for i in range(len(training_partition)):
+        start = i*scd.dps*scd.partition_size
+        end = start + scd.dps*scd.partition_size
+        dbg.dprint("(" + str(training_partition[i]) + ") Train data,nonce: " + str(train_data[start:end]) + "," + str(scd.train_nonce[i]))
+        init3_tx.append(danku.transact().init3(train_data[start:end], scd.train_nonce[i]))
+        chain.wait.for_receipt(init3_tx[i])
+
+    init3_block_number = web3.eth.blockNumber
+    dbg.dprint("Init3 block: " + str(init3_block_number))
+
+    try:
+        # try cancelling contract after init3()
+        danku.transact().cancel_contract()
+    except Exception:
+        pass
+
+    # contract termination should fail
+    contract_finalized = danku.call().contract_terminated()
+    assert contract_finalized == False
+
+    bal = web3.eth.getBalance(solver_account)
+
+    # Verify that the solver account didn't receive the reward amount
+    assert bal == 1000000000000000000000000
+
+    bal = web3.eth.getBalance(offer_account)
+
+    # Verify the offer account didn't get refunded the reward amount
+    assert bal == 999998999999999999978960
+
 '''
 def test_python_solidity_hashing_compatability():
     # Make sure Python and solidity hashes the data groups in the same manner
