@@ -2,6 +2,7 @@ from dutils.dataset import SampleHalfDividedDataset
 from dutils.neural_network import NeuralNetwork
 import dutils.debug as dbg
 from secrets import randbelow
+from populus.utils.wait import wait_for_transaction_receipt
 
 def scale_packed_data(data, scale):
     # Scale data and convert it to an integer
@@ -10,21 +11,28 @@ def scale_packed_data(data, scale):
 def test_single_solver_finalized_contract(web3, chain):
     _hashed_data_groups = []
     accuracy_criteria = 5000 # 50.00%
-
+    total_gas_used = 0
+    timeout = 180
     w_scale = 1000 # Scale up weights by 1000x
     b_scale = 1000 # Scale up biases by 1000x
 
-    danku, _ = chain.provider.get_or_deploy_contract('Danku')
+    danku, deploy_tx = chain.provider.get_or_deploy_contract('Danku')
+    deploy_receipt = wait_for_transaction_receipt(web3, deploy_tx, timeout=timeout)
+    total_gas_used += deploy_receipt["gasUsed"]
+    dbg.dprint("Deploy gas: " + str(deploy_receipt["gasUsed"]))
 
     offer_account = web3.eth.accounts[1]
     solver_account = web3.eth.accounts[2]
 
     # Fund contract
-    web3.eth.sendTransaction({
+    fund_tx = web3.eth.sendTransaction({
 		'from': offer_account,
 		'to': danku.address,
 		'value': web3.toWei(1, "ether")
 	})
+    fund_receipt = wait_for_transaction_receipt(web3, fund_tx, timeout=timeout)
+    total_gas_used += fund_receipt["gasUsed"]
+    dbg.dprint("Fund gas: " + str(fund_receipt["gasUsed"]))
 
     # Check that offerer was deducted
     bal = web3.eth.getBalance(offer_account)
@@ -51,6 +59,9 @@ def test_single_solver_finalized_contract(web3, chain):
     dbg.dprint("Starting block: " + str(web3.eth.blockNumber))
     init1_tx = danku.transact().init1(scd.hashed_data_group, accuracy_criteria,
         offer_account)
+    init1_receipt = wait_for_transaction_receipt(web3, init1_tx, timeout=timeout)
+    total_gas_used += init1_receipt["gasUsed"]
+    dbg.dprint("Init1 gas: " + str(init1_receipt["gasUsed"]))
     chain.wait.for_receipt(init1_tx)
     init1_block_number = web3.eth.blockNumber
     dbg.dprint("Init1 block: " + str(init1_block_number))
@@ -72,6 +83,9 @@ def test_single_solver_finalized_contract(web3, chain):
     dbg.dprint("Data group indexes: " + str(dgi))
 
     init2_tx = danku.transact().init2()
+    init2_receipt = wait_for_transaction_receipt(web3, init2_tx, timeout=timeout)
+    total_gas_used += init2_receipt["gasUsed"]
+    dbg.dprint("Init2 gas: " + str(init2_receipt["gasUsed"]))
     chain.wait.for_receipt(init2_tx)
 
     # Can only access one element of a public array at a time
@@ -99,7 +113,11 @@ def test_single_solver_finalized_contract(web3, chain):
         start = i*scd.dps*scd.partition_size
         end = start + scd.dps*scd.partition_size
         dbg.dprint("(" + str(training_partition[i]) + ") Train data,nonce: " + str(train_data[start:end]) + "," + str(scd.train_nonce[i]))
-        init3_tx.append(danku.transact().init3(train_data[start:end], scd.train_nonce[i]))
+        iter_tx = danku.transact().init3(train_data[start:end], scd.train_nonce[i])
+        iter_receipt = wait_for_transaction_receipt(web3, iter_tx, timeout=timeout)
+        total_gas_used += iter_receipt["gasUsed"]
+        dbg.dprint("Reveal train data iter " + str(i) + " gas: " + str(iter_receipt["gasUsed"]))
+        init3_tx.append(iter_tx)
         chain.wait.for_receipt(init3_tx[i])
 
     init3_block_number = web3.eth.blockNumber
@@ -148,6 +166,9 @@ def test_single_solver_finalized_contract(web3, chain):
     # Submit the solution to the contract
     submit_tx = danku.transact().submit_model(solver_account, il_nn, ol_nn, hl_nn,\
         int_packed_trained_weights, int_packed_trained_biases)
+    submit_receipt = wait_for_transaction_receipt(web3, submit_tx, timeout=timeout)
+    total_gas_used += submit_receipt["gasUsed"]
+    dbg.dprint("Submit gas: " + str(submit_receipt["gasUsed"]))
     chain.wait.for_receipt(submit_tx)
 
     # Get submission index ID
@@ -164,7 +185,11 @@ def test_single_solver_finalized_contract(web3, chain):
         start = i*scd.dps*scd.partition_size
         end = start + scd.dps*scd.partition_size
         dbg.dprint("(" + str(testing_partition[i]) + ") Test data,nonce: " + str(test_data[start:end]) + "," + str(scd.test_nonce[i]))
-        reveal_tx.append(danku.transact().reveal_test_data(test_data[start:end], scd.test_nonce[i]))
+        iter_tx = danku.transact().reveal_test_data(test_data[start:end], scd.test_nonce[i])
+        iter_receipt = wait_for_transaction_receipt(web3, iter_tx, timeout=timeout)
+        total_gas_used += iter_receipt["gasUsed"]
+        dbg.dprint("Reveal test data iter " + str(i) + " gas: " + str(iter_receipt["gasUsed"]))
+        reveal_tx.append(iter_tx)
         chain.wait.for_receipt(reveal_tx[i])
 
     # Wait until the test reveal period ends
@@ -172,6 +197,9 @@ def test_single_solver_finalized_contract(web3, chain):
 
     # Evaluate the submitted solution
     eval_tx = danku.transact().evaluate_model(submission_id)
+    eval_receipt = wait_for_transaction_receipt(web3, eval_tx, timeout=timeout)
+    total_gas_used += eval_receipt["gasUsed"]
+    dbg.dprint("Eval gas: " + str(eval_receipt["gasUsed"]))
 
     # Wait until the evaluation period ends
     chain.wait.for_block(init3_block_number + submission_t + test_reveal_t + evaluation_t)
@@ -180,6 +208,9 @@ def test_single_solver_finalized_contract(web3, chain):
 
     # Finalize the contract
     final_tx = danku.transact().finalize_contract()
+    final_receipt = wait_for_transaction_receipt(web3, final_tx, timeout=timeout)
+    total_gas_used += final_receipt["gasUsed"]
+    dbg.dprint("Final gas: " + str(final_receipt["gasUsed"]))
 
     contract_finalized = danku.call().contract_terminated()
 
@@ -218,6 +249,8 @@ def test_single_solver_finalized_contract(web3, chain):
 
     # Verify the offer account balance
     assert bal == 999998999999999999978960
+
+    dbg.dprint("Total gas used: " + str(total_gas_used))
 
 def test_single_solver_refunded_contract(web3, chain):
     _hashed_data_groups = []
