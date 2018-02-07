@@ -146,6 +146,14 @@ contract Danku {
     }
   }
 
+  function get_training_index() public view returns(uint[training_data_group_size/partition_size]) {
+    return training_partition;
+  }
+
+  function get_testingg_index() public view returns(uint[testing_data_group_size/partition_size]) {
+    return testing_partition;
+  }
+
   function submit_model(
     // Public function for users to submit a solution
     address payment_address,
