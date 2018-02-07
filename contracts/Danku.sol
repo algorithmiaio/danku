@@ -150,7 +150,7 @@ contract Danku {
     return training_partition;
   }
 
-  function get_testingg_index() public view returns(uint[testing_data_group_size/partition_size]) {
+  function get_testing_index() public view returns(uint[testing_data_group_size/partition_size]) {
     return testing_partition;
   }
 
