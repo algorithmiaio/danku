@@ -67,9 +67,9 @@ contract Danku {
   uint public reveal_test_data_groups_block_size = 5; // 1 minute timeframe
   // Deadline for evaluating the submissions
   uint public evaluation_stage_block_size = 5; // 1 minute timeframe
-  uint init1_block_height;
-  uint init3_block_height;
-  uint init_level = 0;
+  uint public init1_block_height;
+  uint public init3_block_height;
+  uint public init_level = 0;
   // Training partition size is 14 (70%)
   // Testing partition size is 6 (30%)
   uint[training_data_group_size/partition_size] public training_partition;
