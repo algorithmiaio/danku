@@ -474,12 +474,12 @@ contract Danku {
     }
   }
 
-  function get_layer(uint nn) private returns (int256[]) {
+  function get_layer(uint nn) private pure returns (int256[]) {
     int256[] memory input_layer = new int256[](nn);
     return input_layer;
   }
 
-  function get_hidden_layers(uint[] l_nn) private returns (int256[]) {
+  function get_hidden_layers(uint[] l_nn) private pure returns (int256[]) {
     uint total_nn = 0;
     // Skip first and last layer since they're not hidden layers
     for (uint i = 1; i < l_nn.length-1; i++) {
@@ -489,7 +489,7 @@ contract Danku {
     return hidden_layers;
   }
 
-  function access_hidden_layer(int256[] hls, uint[] l_nn, uint index) returns (int256[]) {
+  function access_hidden_layer(int256[] hls, uint[] l_nn, uint index) private pure returns (int256[]) {
     // TODO: Bug is here, doesn't work for between last hidden and output layer
     // Returns the hidden layer from the hidden layers array
     int256[] memory hidden_layer = new int256[](l_nn[index+1]);
@@ -509,7 +509,7 @@ contract Danku {
     return hidden_layer;
   }
 
-  function get_prediction(Submission sub, int[datapoint_size] data_point) private returns(int256[]) {
+  function get_prediction(Submission sub, int[datapoint_size] data_point) private pure returns(int256[]) {
     uint[] memory l_nn = new uint[](sub.num_neurons_hidden_layer.length + 2);
     l_nn[0] = sub.num_neurons_input_layer;
     for (uint i = 0; i < sub.num_neurons_hidden_layer.length; i++) {
@@ -519,7 +519,7 @@ contract Danku {
     return forward_pass(data_point, sub.weights, sub.biases, l_nn);
   }
 
-  function forward_pass(int[datapoint_size] data_point, int256[] weights, int256[] biases, uint[] l_nn) private returns (int256[]) {
+  function forward_pass(int[datapoint_size] data_point, int256[] weights, int256[] biases, uint[] l_nn) private pure returns (int256[]) {
     // Initialize neuron arrays
     int256[] memory input_layer = get_layer(l_nn[0]);
     int256[] memory hidden_layers = get_hidden_layers(l_nn);
@@ -532,7 +532,7 @@ contract Danku {
     return forward_pass2(l_nn, input_layer, hidden_layers, output_layer, weights, biases);
   }
 
-  function forward_pass2(uint[] l_nn, int256[] input_layer, int256[] hidden_layers, int256[] output_layer, int256[] weights, int256[] biases) returns (int256[]) {
+  function forward_pass2(uint[] l_nn, int256[] input_layer, int256[] hidden_layers, int256[] output_layer, int256[] weights, int256[] biases) public pure returns (int256[]) {
     // index_counter[0] is weight index
     // index_counter[1] is hidden_layer_index
     uint[] memory index_counter = new uint[](2);
