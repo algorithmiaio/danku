@@ -62,11 +62,11 @@ contract Danku {
   int256[datapoint_size][] public test_data;
   bytes32 partition_seed;
   // Deadline for submitting solutions in terms of block size
-  uint public submission_stage_block_size = 5; // 1 minute timeframe
+  uint public submission_stage_block_size = 100; // 20 minutes timeframe
   // Deadline for revealing the testing dataset
-  uint public reveal_test_data_groups_block_size = 5; // 1 minute timeframe
+  uint public reveal_test_data_groups_block_size = 100; // 20 minutes timeframe
   // Deadline for evaluating the submissions
-  uint public evaluation_stage_block_size = 5; // 1 minute timeframe
+  uint public evaluation_stage_block_size = 100; // 20 minutes timeframe
   uint public init1_block_height;
   uint public init3_block_height;
   uint public init_level = 0;
