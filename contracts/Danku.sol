@@ -154,6 +154,10 @@ contract Danku {
     return testing_partition;
   }
 
+  function get_submission_queue_length() public view returns(uint) {
+    return submission_queue.length;
+  }
+
   function submit_model(
     // Public function for users to submit a solution
     address payment_address,
