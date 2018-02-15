@@ -106,9 +106,9 @@ contract Danku {
     assert(contract_terminated == false);
     // Only allow calling it once, in order
     assert(init_level == 1);
-    // Make sure it's being called within 5 blocks on init1()
+    // Make sure it's being called within 20 blocks on init1()
     // to minimize organizer influence on random index selection
-    if (block.number <= init1_block_height+5 && block.number > init1_block_height) {
+    if (block.number <= init1_block_height+20 && block.number > init1_block_height) {
       // TODO: Also make sure it's being called 1 block after init1()
       // Randomly select indexes
       uint[] memory index_array = new uint[](max_num_data_groups/partition_size);
