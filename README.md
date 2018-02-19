@@ -34,14 +34,15 @@ sudo apt-get install solc libssl-dev
 
 ### 0.2. Initialize your Virtual Environment
 
-Install [virtualenv](https://virtualenv.pypa.io/en/stable/) if you don't have it yet.
+Install [virtualenv](https://virtualenv.pypa.io/en/stable/) if you don't have it yet. (Comes installed with Python3.6)
 
 Setup a virtual environment with Python 3:
 
 ```
 cd danku;
-virtualenv --python=python3.6 venv;
+python -m venv venv;
 source venv/bin/activate;
+
 ```
 
 ### 0.3. Install the Populus Framework
