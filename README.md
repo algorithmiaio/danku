@@ -40,7 +40,7 @@ Setup a virtual environment with Python 3:
 
 ```
 cd danku;
-python -m venv venv;
+python3.6 -m venv venv;
 source venv/bin/activate;
 
 ```
