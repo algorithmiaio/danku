@@ -40,7 +40,7 @@ class Dataset(object):
         l = self.num_data_groups * [None]
         self.nonce = list(map(lambda x: randbelow(2**32), l))
 
-    def sha_data_group(self, data_group, nonce):
+    def sha_data_group(self, data_group, nonce, i):
         # TODO: Also check if sha3_256() keccak version works
         serialized_dg = b""
         l = []
@@ -50,7 +50,7 @@ class Dataset(object):
                 serialized_dg += number.to_bytes(32, signed=True, byteorder="big")
         serialized_dg += nonce.to_bytes(32, signed=True, byteorder="big")
         l.append(nonce)
-        dbg.dprint("Hashed data group: " + str(l))
+        dbg.dprint("(" + str(i) + ") Hashed data group: " + str(l))
         return sha256(serialized_dg).digest()
 
     def sha_all_data_groups(self):
@@ -58,7 +58,7 @@ class Dataset(object):
         for i in range(self.num_data_groups):
             start = i * self.partition_size
             end = start + self.partition_size
-            dg_hash = self.sha_data_group(self.data[start:end], self.nonce[i])
+            dg_hash = self.sha_data_group(self.data[start:end], self.nonce[i], i)
             self.hashed_data_group.append(dg_hash)
 
     def partition_dataset(self, training_partition, testing_partition):
@@ -244,7 +244,7 @@ class SampleAcrossCornerDataset(Dataset):
     0 0 0 0 - - - - - 1 1 1 1 | 4
     - 0 0 0 0 - - - 1 1 1 1 - | 3
     - - - 0 0 - - - 1 1 - - - | 2
-    - - - - - 0 - 1 - - - - - | 1
+    - - - - - - - - - - - - - | 1
     - - - - - - - - - - - - - | 0
     - - - - - 1 - 0 - - - - - | 1
     - - - 1 1 - - - 0 0 - - - | 2
@@ -259,10 +259,14 @@ class SampleAcrossCornerDataset(Dataset):
         partition_size=5):
         data = [(-6,6,0),(-5,6,0),(-4,6,0),(-6,5,0),(-5,5,0),(-4,5,0),
         (-3,5,0),(-6,4,0),(-5,4,0),(-4,4,0),(-3,4,0),(-5,3,0),(-4,3,0),(-3,3,0),
-        (-2,2,0),(-1,1,0),(1,-1,0),(2,-2,0),(3,-3,0),(4,-3,0),(5,-3,0),(3,-4,0),
-        (4,-4,0),(5,-4,0),(6,-4,0),(3,-5,0),(4,-5,0),(5,-5,0),(6,-5,0),(4,-6,0),
-        (5,-6,0),(6,-6,0),(-2,3,0),(-3,2,0),(3,-2,0),(2,-3,0),(2,3,1),(3,2,1),
-        (-3-2,1),(-2,-3,1)]
+        (-2,2,0),(1,-1,0),(2,-2,0),(3,-3,0),(4,-3,0),(5,-3,0),(3,-4,0),(4,-4,0),
+        (5,-4,0),(6,-4,0),(3,-5,0),(4,-5,0),(5,-5,0),(6,-5,0),(4,-6,0),(5,-6,0),
+        (6,-6,0),(-2,3,0),(-3,2,0),(3,-2,0),(2,-3,0),(-6,-6,1),(-5,-6,1),
+        (-4,-6,1),(-6,-5,1),(-5,-5,1),(-4,-5,1),(-3,-5,1),(-6,-4,1),(-5,-4,1),
+        (-4,-4,1),(-3,-4,1),(-5,-3,1),(-4,-3,1),(-3,-3,1),(-2,-3,1),(-3,-2,1),
+        (-2,-2,1),(-1,-1,1),(2,2,1),(3,2,1),(2,3,1),(3,3,1),(4,3,1),(5,3,1),
+        (3,4,1),(4,4,1),(5,4,1),(6,4,1),(3,5,1),(4,5,1),(5,5,1),(6,5,1),(4,6,1),
+        (5,6,1),(6,5,1)]
         max_num_data_groups = len(data)
         super().__init__(max_num_data_groups=max_num_data_groups, training_percentage=training_percentage,\
         partition_size=partition_size)
