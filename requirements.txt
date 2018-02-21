@@ -1,3 +1,5 @@
 populus==2.2.0
 tensorflow==1.4.1
 pytest!=3.3.*,>=2.7.2
+pandas==0.22.0
+matplotlib==2.1.2
