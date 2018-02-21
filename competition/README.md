@@ -30,7 +30,7 @@ source venv/bin/activate;
 pip install populus==2.2.0
 ```
 
-You also need `geth` up and running. It helps you interact with the contract, like downloading the test dataset and submitting your solution.
+You also need `geth` up and running. It helps you interact with the contract, like downloading the test dataset and submitting your solution. Please refer to the official Ethereum guide for installing `geth` [here](https://github.com/ethereum/go-ethereum/wiki/Installing-Geth).
 
 After you get `geth` running locally on the default port number `8545` you can connect to it and download the training dataset with the following piece of code:
 
@@ -74,4 +74,6 @@ example_unit_test_with_debug_true()
 
 ## Questions and more
 
-If you have questions, or find a bugs anywhere, please create an issue [here](https://github.com/algorithmiaio/danku/issues).
+If you have questions, or find a bugs anywhere, please create an issue [here](https://github.com/algorithmiaio/danku/issues). After installing the mist browser, follow the intructions below:
+
+insert_screen_shots_or_gif_of_mist_browser_steps_here
