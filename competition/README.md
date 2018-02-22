@@ -1,5 +1,21 @@
 # First DanKu Competition
 
+Since we’ve just announced the protocol, we thought that it would be also fitting to create the first public DanKu contract.
+
+![Submit solution](election_map.png)
+
+For this competition, we’ve decided to use the 2016 U.S Presidential county election data as our dataset. Every county is represented with 3 data points: longitude, latitude and elected candidate.
+
+For example, a data point can look something like this: `[047606200, 122332100, 0]`.
+The first two values refers to the latitude and longitude of Seattle.
+The third value, 0 refers to the Democratic candidate, whereas 1 refers to Republican candidate in this data format
+
+500 random data points are selected as the dataset for this competition. 80% of this dataset will be used for training. The remaining 20% of the dataset will be used for evaluating the dataset. Since the training and testing datasets are randomly selected by the contract, the fairness of the competition is assured.
+
+Participants of the contract are required to train a simple forward pass neural network where they can define the neural network structure in terms of layers, neurons and biases. After training, they are required to submit their network definition, weights and biases to the contract.
+
+The reward for the winning solution is X ethereum.
+
 ## Some Info
 
 This is the first ever publicly launched DanKu contract/competition.
