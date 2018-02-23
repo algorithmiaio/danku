@@ -6,9 +6,9 @@ contract Danku {
   function Danku() public {
     // Neural Network Structure:
     //
-    // (assertd) input layer x number of neurons
+    // (required) input layer x number of neurons
     // (optional) hidden layers x number of neurons
-    // (assertd) output layer x number of neurons
+    // (required) output layer x number of neurons
   }
   struct Submission {
       address payment_address;
