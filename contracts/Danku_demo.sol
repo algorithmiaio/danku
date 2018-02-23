@@ -109,7 +109,6 @@ contract Danku_demo {
     // Make sure it's being called within 20 blocks on init1()
     // to minimize organizer influence on random index selection
     if (block.number <= init1_block_height+20 && block.number > init1_block_height) {
-      // TODO: Also make sure it's being called 1 block after init1()
       // Randomly select indexes
       uint[] memory index_array = new uint[](max_num_data_groups/partition_size);
       for (uint i = 0; i < max_num_data_groups/partition_size; i++) {
@@ -502,7 +501,6 @@ contract Danku_demo {
   }
 
   function access_hidden_layer(int256[] hls, uint[] l_nn, uint index) private pure returns (int256[]) {
-    // TODO: Bug is here, doesn't work for between last hidden and output layer
     // Returns the hidden layer from the hidden layers array
     int256[] memory hidden_layer = new int256[](l_nn[index+1]);
     uint hidden_layer_index = 0;
