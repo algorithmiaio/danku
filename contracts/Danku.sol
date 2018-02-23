@@ -252,8 +252,6 @@ contract Danku {
   }
 
   function evaluate_model(uint submission_index) public {
-    // TODO: Make sure that if there's two same submission w/ same weights
-    // and biases, the first one submitted should get the reward.
     // Make sure contract is not terminated
     assert(contract_terminated == false);
     // Make sure it's not the initialization stage anymore
@@ -274,6 +272,13 @@ contract Danku {
     if (submission_accuracy > best_submission_accuracy) {
       best_submission_index = submission_index;
       best_submission_accuracy = submission_accuracy;
+    }
+    // If accuracy is the same, the earlier submission is selected
+    if (submission_accuracy == best_submission_accuracy) {
+      if (submission_index < best_submission_index) {
+        best_submission_index = submission_index;
+        best_submission_accuracy = submission_accuracy;
+      }
     }
   }
 
