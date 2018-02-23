@@ -14,7 +14,7 @@ The third value, 0 refers to the Democratic candidate, whereas 1 refers to Repub
 
 Participants of the contract are required to train a simple forward pass neural network where they can define the neural network structure in terms of layers, neurons and biases. After training, they are required to submit their network definition, weights and biases to the contract.
 
-The reward for the winning solution is X ethereum.
+The reward for the winning submission is 5 ethereum.
 
 ## Some Info
 
