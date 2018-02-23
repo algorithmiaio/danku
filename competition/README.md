@@ -127,7 +127,7 @@ And voila! You've just submitted your first solution to the World's first DanKu 
 
 ## End to end example
 
-If you want to see how a DanKu contract functions end to end, you can checkout one of the tests in debug mode. This will spit out all of the important info in the console to help better understand how DanKu contracts function.
+If you want to see how a DanKu contract functions end to end, you can checkout [one of the tests](../tests/test_danku.py) in debug mode. This will spit out all of the important info in the console to help better understand how DanKu contracts work.
 
 Make sure in `config.py` you change `DEBUG = False` to `DEBUG = True`.
 
