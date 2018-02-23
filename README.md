@@ -2,7 +2,7 @@
 
 ## 0. Requirements
 
-To run and test Ethereum contracts, we first need to setup our local development environment. The following commands have been tested for OSX and Linux.
+To run the DanKu unittests, we first need to setup our local development environment. The following commands have been tested for OSX and Linux.
 
 ### 0.1. Installing the Solidity Compiler
 
@@ -73,4 +73,6 @@ python -m pytest --disable-pytest-warnings tests/*
 
 ## 2. Danku Contracts
 
-TODO
+The DanKu contract can be found in the `contracts` directory.
+
+For more information about DanKu contracts, please read the [white paper](#).
