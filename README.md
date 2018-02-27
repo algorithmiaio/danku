@@ -1,5 +1,13 @@
 # Danku
 
+Machine Learning algorithms are being developed and improved at an incredible rate, but are not necessarily getting more accessible to the broader community. That’s why today Algorithmia is announcing DanKu, a new blockchain-based protocol for evaluating and purchasing ML models on a public blockchain such as Ethereum. DanKu enables anyone to get access to high quality, objectively measured machine learning models. At Algorithmia, we believe that widespread access to algorithms and deployment solutions is going to be a fundamental building block of a balanced future for AI, and DanKu is a step towards that vision.
+
+The DanKu protocol utilizes blockchain technology via smart contracts. The contract allows anyone to post a data set, an evaluation function, and a monetary reward for anyone who can provide the best trained machine learning model for the data. Participants train deep neural networks to model the data, and submit their trained networks to the blockchain. The blockchain executes these neural network models to evaluate submissions, and ensure that payment goes to the best model.
+
+The contract allows for the creation of a decentralized and trustless marketplace for exchanging ML models. This gives ML practitioners an opportunity to monetize their skills directly. It also allows any participant or organization to solicit machine learning models from all over the world. This will incentivize the creation of better machine learning models, and make AI more accessible to companies and software agents. Anyone with a dataset, including software agents can create DanKu contracts.
+
+[Whitepaper](https://algorithmia.com/research/ml-models-on-blockchain)
+
 ## 0. Requirements
 
 To run the DanKu unittests, we first need to setup our local development environment. The following commands have been tested for OSX and Linux.

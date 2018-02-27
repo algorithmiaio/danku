@@ -1,5 +1,7 @@
 # First DanKu Competition
 
+See [here](https://blog.algorithmia.com/trustless-machine-learning-contracts-danku/) for blog post describing the DanKu protocol and competition. See [whitepaper](https://algorithmia.com/research/ml-models-on-blockchain) for full details of the protocol.
+
 Since we’ve just announced the protocol, we thought that it would be also fitting to create the first public DanKu contract.
 
 ![Submit solution](images/election_map.png)
