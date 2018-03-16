@@ -55,10 +55,10 @@ source venv/bin/activate;
 
 ### 0.3. Install the Populus Framework
 
-Install `populus` while in virtualenv:
+Install `populus` and other requirements while in virtualenv:
 
 ```
-pip install populus==2.2.0
+pip install -r requirements.txt
 ```
 
 Yay! You should be able to develop Ethereum contracts in Python 3 now!
