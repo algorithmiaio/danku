@@ -46,7 +46,7 @@ def convert_coord(coord):
 def revert_coord(coord):
     return float(coord) / 1000000
 
-def get_prediction_map(submission_id=None, fig_save_path=None, show_figure=True):
+def get_prediction_map(submission_id=None):
     # Generate prediction map for best model
     pred_obj = {}
     # If there's no submission ID, get the best submission instead
