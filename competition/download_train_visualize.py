@@ -31,11 +31,20 @@ contract_train_data = []
 for i in range(contract_train_data_length):
     for j in range(3):
         contract_train_data.append(danku.call().train_data(i,j))
+print("Downloading testing data from the contract...\n")
+# Get testing data
+contract_test_data_length = danku.call().get_test_data_length()
+contract_test_data = []
+for i in range(contract_test_data_length):
+    for j in range(3):
+        contract_test_data.append(danku.call().test_data(i,j))
 ds = Dataset()
 ds.dps = 3
 contract_train_data = ds.unpack_data(contract_train_data)
+contract_test_data = ds.unpack_data(contract_test_data)
 print("Download finished!\n")
 print("Contract training data:\n" + str(contract_train_data) + "\n")
+print("Contract testing data:\n" + str(contract_test_data) + "\n")
 
 # Train a neural network with the data
 il_nn = 2 # 2 input neurons
