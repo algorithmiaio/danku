@@ -56,8 +56,7 @@ After you get `geth` running locally on the default port number `8545` you can c
 python -W ignore competition/download_train_visualize.py
 ```
 
-This script will download the training dataset, train a neural network and visualize the training data for you. The weights and biases will be automatically scaled for you. DanKu contracts expect 
-the values to be scaled up by 10000 times, and rounded to integers.
+This script will download the training dataset, train a neural network and visualize the training data for you. The weights and biases will be automatically scaled for you. DanKu contracts expect the values to be scaled up by 10000 times, and rounded to integers.
 
 We can now submit our model to the DanKu contract. Running the script should give you values something like:
 
