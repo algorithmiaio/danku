@@ -6,6 +6,8 @@ from secrets import choice, randbelow
 from random import shuffle
 from hashlib import sha256
 import dutils.debug as dbg
+import pandas as pd
+import numpy as np
 
 class Dataset(object):
     def __init__(self, max_num_data_groups=100, training_percentage=0.7,\
@@ -271,5 +273,146 @@ class SampleAcrossCornerDataset(Dataset):
         super().__init__(max_num_data_groups=max_num_data_groups, training_percentage=training_percentage,\
         partition_size=partition_size)
         self.data = data
+        self.shuffle()
+        self.dps = 3
+
+class DemoDataset(Dataset):
+    def __init__(self, training_percentage=0.7,\
+        partition_size=5):
+        # Voting data
+        # https://data.world/data4democracy/election-transparency/workspace/file?filename=election_results_with_demographics.csv
+
+        # Coordinate data
+        # https://en.wikipedia.org/wiki/User:Michael_J/County_table
+        # Used a wiki table to csv converter. (http://wikitable2csv.ggor.de/)
+
+        # Zipcode data
+        # https://www.gaslampmedia.com/download-zip-code-latitude-longitude-city-state-county-csv/
+
+        # Loading the files
+        cols_to_use1 = ["FIPS", "Latitude", "Longitude"]
+        df1 = pd.read_csv("data/fips_geo_data.csv", usecols=cols_to_use1)
+
+        cols_to_use2 = ["fips_fixed", "clinton", "trump", "state", "jurisdiction"]
+        df2 = pd.read_csv("data/election_results_with_demographics.csv", usecols=cols_to_use2)
+
+        cols_to_use3 = ["STATE_NUMERIC", "COUNTY_NUMERIC", "SOURCE_LAT_DEC", "SOURCE_LONG_DEC"]
+        df3 = pd.read_csv("data/NationalFile_20180201.txt", sep='|', usecols=cols_to_use3, dtype=str)
+
+        cols_to_use4 = ["zip_code", "latitude", "longitude", "city", "state", "county"]
+        df4 = pd.read_csv("data/zip_codes_states.csv", usecols=cols_to_use4, dtype=str)
+
+        # Merge state + county numbers to form fips
+        df3["fips"] = df3["STATE_NUMERIC"].map(str) + df3["COUNTY_NUMERIC"]
+        del df3["STATE_NUMERIC"]
+        del df3["COUNTY_NUMERIC"]
+
+        # Rename all columns to lowercase and common fips name
+        df1 = df1.rename(columns={"FIPS": "fips", "Latitude": "latitude", "Longitude": "longitude"})
+        df2 = df2.rename(columns={"fips_fixed": "fips"})
+        df3 = df3.rename(columns={"SOURCE_LAT_DEC": "latitude", "SOURCE_LONG_DEC": "longitude"})
+
+        # Drop rows where there's no lat-long data
+        df3 = df3[pd.notnull(df3["latitude"])]
+        df3 = df3[pd.notnull(df3["longitude"])]
+
+        # Drop rows where there's duplicate data
+        df3 = df3.drop_duplicates(subset="fips")
+
+        # Extend lat-long coordinates if they're not length 9
+        df3["latitude"] = np.where(len(df3["latitude"])!=9, df3["latitude"] + str(9-len(df3["latitude"]) * 0), "red")
+
+        # Remove duplicate state-county pairs
+        c_maxes = df4.groupby(["state", "county"]).zip_code.transform(max)
+        df4 = df4.loc[df4.zip_code == c_maxes]
+        df4 = df4.reset_index(drop=True)
+
+        # Lower case state and county names
+        df2["state"] = df2["state"].str.lower()
+        df2["jurisdiction"] = df2["jurisdiction"].str.lower()
+
+        df4["state"] = df4["state"].str.lower()
+        df4["county"] = df4["county"].str.lower()
+
+        # Merge table based on column fips
+        # dfN = pd.merge(df1, df2, on="fips")
+        # dfN = pd.merge(df2, df3, on="fips")
+        dfN = pd.merge(df2, df4,  how="left", left_on=["state","jurisdiction"], right_on = ["state","county"])
+
+        # Drop null value rows
+        dfN = dfN[pd.notnull(dfN["latitude"])]
+        dfN = dfN[pd.notnull(dfN["longitude"])]
+        dfN = dfN.reset_index(drop=True)
+
+
+        # Remove ° from latitude & longitude
+        dfN["latitude"].replace(regex=True,inplace=True,to_replace="°",value="")
+        dfN["longitude"].replace(regex=True,inplace=True,to_replace="°",value="")
+
+        # Remove Alaska and Puerto Rico from the dataset
+        # dfN = dfN[dfN.state != "PR"]
+        # dfN = dfN[dfN.state != "AK"]
+
+        # Class 0 for Democrat and class 1 for Republican
+        def pick_part(row):
+            if row["clinton"] > row["trump"]:
+                return 0
+            else:
+                return 1
+
+        # Assign party for majority vote
+        dfN["party"] = dfN.apply(lambda row: pick_part(row), axis=1)
+
+        # Remove the voting percentages & fips code
+        del dfN["clinton"]
+        del dfN["trump"]
+        del dfN["fips"]
+        del dfN["state"]
+        del dfN["jurisdiction"]
+        del dfN["zip_code"]
+        del dfN["city"]
+        del dfN["county"]
+
+        # Properly convert and format latitude & longitude
+        dfN["latitude"].replace(regex=True,inplace=True,to_replace=r"\+",value="")
+        dfN["longitude"].replace(regex=True,inplace=True,to_replace=r"\+",value="")
+
+        dfN["latitude"].replace(regex=True,inplace=True,to_replace=r"\–",value="-")
+        dfN["longitude"].replace(regex=True,inplace=True,to_replace=r"\–",value="-")
+
+        # If lan-long isn't length 10, extend it up to length 10
+        # dfN["latitude"] = dfN["latitude"].apply(lambda x: ("0"*(3-len(str(x).split(".")[0]))+str(x)) if(len(str(x).split(".")[0]) < 3) else str(x))
+        dfN["latitude"] = dfN["latitude"].apply(lambda x: (str(x)+"0"*(6-len(str(x).split(".")[1]))) if(len(str(x).split(".")[1]) < 6) else str(x))
+
+        # dfN["longitude"] = dfN["longitude"].apply(lambda x: ("0"*(3-len(str(x).split(".")[0]))+str(x)) if(len(str(x).split(".")[0]) < 3) else str(x))
+        dfN["longitude"] = dfN["longitude"].apply(lambda x: (str(x)+"0"*(6-len(str(x).split(".")[1]))) if(len(str(x).split(".")[1]) < 6) else str(x))
+
+        dfN["latitude"].replace(regex=True,inplace=True,to_replace=r"\.",value="")
+        dfN["longitude"].replace(regex=True,inplace=True,to_replace=r"\.",value="")
+
+        # dfN["latitude"] = pd.to_numeric(dfN["latitude"])
+        # dfN["longitude"] = pd.to_numeric(dfN["longitude"])
+
+        # Normally there's 2442 data points
+        # Get the first 2440 values (so it's divisible by 5)
+        max_values = 500
+        super().__init__(max_num_data_groups=max_values, training_percentage=training_percentage,\
+        partition_size=partition_size)
+        self.data = [tuple(map(lambda y: int(y), x)) for x in dfN.values]
+
+        # scatter_x = np.array(list(map(lambda x: x[1:2][0], self.data)))
+        # scatter_y = np.array(list(map(lambda x: x[:1][0], self.data)))
+        # group = np.array(list(map(lambda x: x[2:3][0], self.data)))
+        # cdict = {0: "blue", 1: "red"}
+        #
+        # fig, ax = plt.subplots()
+        # for g in np.unique(group):
+        #     ix = np.where(group == g)
+        #     ax.scatter(scatter_x[ix], scatter_y[ix], c = cdict[g], label = g, s = 4)
+        # ax.legend()
+        # plt.show()
+
+        random.shuffle(self.data)
+        self.data = self.data[:max_values]
         self.shuffle()
         self.dps = 3
