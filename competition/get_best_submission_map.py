@@ -5,7 +5,6 @@ from dutils.neural_network import NeuralNetwork
 from web3 import Web3, HTTPProvider, IPCProvider
 from matplotlib import pyplot as plt
 import numpy as np
-import shapefile as shp
 import json
 import geopandas
 
