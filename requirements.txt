@@ -4,4 +4,5 @@ pytest!=3.3.*,>=2.7.2
 pandas==0.22.0
 matplotlib==2.1.2
 web3==3.16.5
+eth_utils==0.8.1
 geopandas==0.3.0
